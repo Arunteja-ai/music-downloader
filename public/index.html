@@ -1276,9 +1276,11 @@
       suggestTimeout = setTimeout(() => fetchSuggestions(q), 160);
     });
 
+    const API_BASE = '';
+
     async function fetchSuggestions(query) {
       try {
-        const res = await fetch(`/api/suggest?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`${API_BASE}/api/suggest?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         if (data.suggestions && data.suggestions.length > 0) {
           renderSuggestions(data.suggestions);
@@ -1391,7 +1393,7 @@
       `).join('');
 
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         const results = data.results || [];
 
