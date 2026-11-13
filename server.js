@@ -56,9 +56,7 @@ async function searchJioSaavn(query) {
       if (!media) continue;
 
       let art = song.image || '';
-      if (art) {
-        art = art.replace('150x150', '500x500').replace('50x50', '500x500');
-      }
+      if (art) art = art.replace('150x150', '500x500').replace('50x50', '500x500');
 
       const durSec = parseInt(song.duration, 10) || 0;
       const mins = Math.floor(durSec / 60);
@@ -83,7 +81,6 @@ async function searchJioSaavn(query) {
     }
     return formatted;
   } catch (err) {
-    console.error('JioSaavn search error:', err.message);
     return [];
   }
 }
@@ -121,6 +118,21 @@ async function searchItunes(query) {
   } catch (err) {
     return [];
   }
+}
+
+function resolveStaticFile(reqPath) {
+  const candidates = [
+    path.join(__dirname, reqPath),
+    path.join(__dirname, 'public', reqPath),
+    path.join(process.cwd(), reqPath),
+    path.join(process.cwd(), 'public', reqPath)
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c) && fs.statSync(c).isFile()) {
+      return c;
+    }
+  }
+  return null;
 }
 
 const server = http.createServer(async (req, res) => {
@@ -198,11 +210,11 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Serve static files
-  let reqPath = pathname === '/' ? '/index.html' : pathname;
-  const filePath = path.join(__dirname, reqPath);
+  // Static file handling
+  let reqPath = (pathname === '/' || !pathname) ? 'index.html' : pathname.replace(/^\//, '');
+  const filePath = resolveStaticFile(reqPath);
 
-  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+  if (filePath) {
     let contentType = 'text/plain';
     if (filePath.endsWith('.html')) contentType = 'text/html; charset=utf-8';
     else if (filePath.endsWith('.js')) contentType = 'application/javascript';
@@ -216,6 +228,14 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Fallback to index.html for any SPA routes
+  const fallbackIndex = resolveStaticFile('index.html');
+  if (fallbackIndex) {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    fs.createReadStream(fallbackIndex).pipe(res);
+    return;
+  }
+
   res.writeHead(404);
   res.end('Not found');
 });
@@ -223,3 +243,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
+module.exports = server;
