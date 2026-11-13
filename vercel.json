@@ -6,6 +6,18 @@
       "dest": "/api/search.js"
     },
     {
+      "src": "/api/suggest",
+      "dest": "/api/suggest.js"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
+    },
+    {
+      "src": "/sw.js",
+      "dest": "/sw.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
