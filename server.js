@@ -7,7 +7,6 @@ const CryptoJS = require('crypto-js');
 const PORT = process.env.PORT || 3000;
 const DES_KEY = CryptoJS.enc.Utf8.parse('38346591');
 
-// Decrypt JioSaavn media URL into direct CDN stream
 function decryptMediaUrl(encryptedMediaUrl) {
   if (!encryptedMediaUrl) return null;
   try {
@@ -19,35 +18,25 @@ function decryptMediaUrl(encryptedMediaUrl) {
     let rawUrl = decrypted.toString(CryptoJS.enc.Utf8);
     if (!rawUrl || !rawUrl.startsWith('http')) return null;
 
-    // Provide 320kbps (highest quality) and 160kbps fallback
     const url320 = rawUrl.replace(/_96\.mp4|_160\.mp4/, '_320.mp4');
     const url160 = rawUrl.replace(/_96\.mp4|_320\.mp4/, '_160.mp4');
-    return { url320, url160, defaultUrl: url320 };
+    const url96 = rawUrl.replace(/_160\.mp4|_320\.mp4/, '_96.mp4');
+    return { url320, url160, url96, defaultUrl: url320 };
   } catch (err) {
     return null;
   }
 }
 
-// Clean HTML entities from string
-function decodeEntities(encodedString) {
-  if (!encodedString) return '';
-  const translate_re = /&(nbsp|amp|quot|lt|gt);/g;
-  const translate = {
-    "nbsp": " ",
-    "amp": "&",
-    "quot": "\"",
-    "lt": "<",
-    "gt": ">"
-  };
-  return encodedString.replace(translate_re, function(match, entity) {
-    return translate[entity];
-  }).replace(/&#(\d+);/gi, function(match, numStr) {
-    const num = parseInt(numStr, 10);
-    return String.fromCharCode(num);
-  });
+function decodeEntities(str) {
+  if (!str) return '';
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#(\d+);/g, (m, d) => String.fromCharCode(d));
 }
 
-// Search JioSaavn API for full songs
 async function searchJioSaavn(query) {
   const saavnUrl = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&p=1&n=25&q=${encodeURIComponent(query)}`;
   try {
@@ -66,7 +55,6 @@ async function searchJioSaavn(query) {
       const media = decryptMediaUrl(song.encrypted_media_url);
       if (!media) continue;
 
-      // HD artwork (500x500)
       let art = song.image || '';
       if (art) {
         art = art.replace('150x150', '500x500').replace('50x50', '500x500');
@@ -84,9 +72,11 @@ async function searchJioSaavn(query) {
         year: song.year || '',
         language: song.language || '',
         duration: durSec ? `${mins}:${secs}` : 'Full Song',
+        durationSec: durSec,
         artwork: art,
         audioUrl: media.url320,
-        audioFallback: media.url160,
+        audioUrl160: media.url160,
+        audioUrl96: media.url96,
         isFullSong: true,
         source: 'JioSaavn 320kbps'
       });
@@ -98,7 +88,6 @@ async function searchJioSaavn(query) {
   }
 }
 
-// Global iTunes search fallback
 async function searchItunes(query) {
   const itunesUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`;
   try {
@@ -120,8 +109,11 @@ async function searchItunes(query) {
         year: item.releaseDate ? new Date(item.releaseDate).getFullYear() : '',
         language: 'Global',
         duration: durSec ? `${mins}:${secs}` : '',
+        durationSec: durSec,
         artwork: art,
         audioUrl: item.previewUrl,
+        audioUrl160: item.previewUrl,
+        audioUrl96: item.previewUrl,
         isFullSong: false,
         source: 'iTunes Audio'
       };
@@ -132,7 +124,6 @@ async function searchItunes(query) {
 }
 
 const server = http.createServer(async (req, res) => {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -146,6 +137,44 @@ const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
 
+  // Autocomplete endpoint
+  if (pathname === '/api/suggest') {
+    const q = parsedUrl.query.q;
+    if (!q || q.length < 2) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ suggestions: [] }));
+      return;
+    }
+    try {
+      const suggestUrl = `https://www.jiosaavn.com/api.php?__call=autocomplete.get&_format=json&_marker=0&cc=in&includeMetaTags=1&query=${encodeURIComponent(q)}`;
+      const response = await fetch(suggestUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      });
+      const data = await response.json();
+      const suggestions = [];
+      if (data && data.songs && data.songs.data) {
+        for (const item of data.songs.data.slice(0, 7)) {
+          let art = item.image || '';
+          if (art) art = art.replace('50x50', '150x150');
+          suggestions.push({
+            id: item.id,
+            title: decodeEntities(item.title),
+            description: decodeEntities(item.description),
+            image: art
+          });
+        }
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ suggestions }));
+    } catch (e) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ suggestions: [] }));
+    }
+    return;
+  }
+
   // Search API endpoint
   if (pathname === '/api/search') {
     const query = parsedUrl.query.q;
@@ -156,14 +185,10 @@ const server = http.createServer(async (req, res) => {
     }
 
     try {
-      // Primary: JioSaavn full 320kbps songs
       let results = await searchJioSaavn(query);
-
-      // If no results on Saavn, fallback to iTunes
       if (!results.length) {
         results = await searchItunes(query);
       }
-
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: true, count: results.length, results }));
     } catch (e) {
@@ -173,27 +198,28 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Serve static index.html
-  if (pathname === '/' || pathname === '/index.html') {
-    const filePath = path.join(__dirname, 'index.html');
-    fs.readFile(filePath, (err, content) => {
-      if (err) {
-        res.writeHead(500);
-        res.end('Error loading index.html');
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(content);
-    });
+  // Serve static files
+  let reqPath = pathname === '/' ? '/index.html' : pathname;
+  const filePath = path.join(__dirname, reqPath);
+
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    let contentType = 'text/plain';
+    if (filePath.endsWith('.html')) contentType = 'text/html; charset=utf-8';
+    else if (filePath.endsWith('.js')) contentType = 'application/javascript';
+    else if (filePath.endsWith('.json')) contentType = 'application/json';
+    else if (filePath.endsWith('.css')) contentType = 'text/css';
+    else if (filePath.endsWith('.svg')) contentType = 'image/svg+xml';
+    else if (filePath.endsWith('.png')) contentType = 'image/png';
+
+    res.writeHead(200, { 'Content-Type': contentType });
+    fs.createReadStream(filePath).pipe(res);
     return;
   }
 
-  // 404 for other paths
   res.writeHead(404);
   res.end('Not found');
 });
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running at http://localhost:${PORT}`);
-  console.log(`Mobile network URL: http://10.150.10.158:${PORT}`);
 });

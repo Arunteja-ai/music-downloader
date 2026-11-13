@@ -15,7 +15,8 @@ function decryptMediaUrl(encryptedMediaUrl) {
 
     const url320 = rawUrl.replace(/_96\.mp4|_160\.mp4/, '_320.mp4');
     const url160 = rawUrl.replace(/_96\.mp4|_320\.mp4/, '_160.mp4');
-    return { url320, url160 };
+    const url96 = rawUrl.replace(/_160\.mp4|_320\.mp4/, '_96.mp4');
+    return { url320, url160, url96 };
   } catch (err) {
     return null;
   }
@@ -51,8 +52,11 @@ async function searchItunesFallback(query) {
         year: item.releaseDate ? new Date(item.releaseDate).getFullYear() : '',
         language: 'Global',
         duration: durSec ? `${mins}:${secs}` : '',
+        durationSec: durSec,
         artwork: art,
         audioUrl: item.previewUrl,
+        audioUrl160: item.previewUrl,
+        audioUrl96: item.previewUrl,
         isFullSong: false,
         source: 'Audio'
       };
@@ -109,9 +113,11 @@ module.exports = async (req, res) => {
           year: song.year || '',
           language: song.language || '',
           duration: durSec ? `${mins}:${secs}` : 'Full Song',
+          durationSec: durSec,
           artwork: art,
           audioUrl: media.url320,
-          audioFallback: media.url160,
+          audioUrl160: media.url160,
+          audioUrl96: media.url96,
           isFullSong: true,
           source: '320kbps'
         });
