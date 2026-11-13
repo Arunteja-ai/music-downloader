@@ -31,6 +31,37 @@ function decodeEntities(str) {
     .replace(/&#(\d+);/g, (m, d) => String.fromCharCode(d));
 }
 
+async function searchItunesFallback(query) {
+  try {
+    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`);
+    const data = await res.json();
+    if (!data.results) return [];
+
+    return data.results.map(item => {
+      const art = item.artworkUrl100 ? item.artworkUrl100.replace('100x100bb.jpg', '500x500bb.jpg') : '';
+      const durSec = item.trackTimeMillis ? Math.floor(item.trackTimeMillis / 1000) : 0;
+      const mins = Math.floor(durSec / 60);
+      const secs = (durSec % 60).toString().padStart(2, '0');
+
+      return {
+        id: item.trackId,
+        title: item.trackName,
+        artist: item.artistName,
+        album: item.collectionName || 'Single',
+        year: item.releaseDate ? new Date(item.releaseDate).getFullYear() : '',
+        language: 'Global',
+        duration: durSec ? `${mins}:${secs}` : '',
+        artwork: art,
+        audioUrl: item.previewUrl,
+        isFullSong: false,
+        source: 'Audio'
+      };
+    });
+  } catch (e) {
+    return [];
+  }
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -53,7 +84,7 @@ module.exports = async (req, res) => {
       }
     });
     const data = await response.json();
-    const results = [];
+    let results = [];
 
     if (data && data.results) {
       for (const song of data.results) {
@@ -85,6 +116,10 @@ module.exports = async (req, res) => {
           source: '320kbps'
         });
       }
+    }
+
+    if (!results.length) {
+      results = await searchItunesFallback(query);
     }
 
     return res.status(200).json({ success: true, count: results.length, results });
