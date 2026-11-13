@@ -621,7 +621,10 @@
     }
     .hero-right {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 0.5rem;
     }
     .hero-controls {
       display: flex;
@@ -2123,20 +2126,35 @@
     }
 
     /* Hero Buttons Extras */
-    .hero-btn.magic {
-      background: linear-gradient(135deg, #ec4899, #8b5cf6);
-      color: white;
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 0.35rem 0.75rem;
-      border-radius: 8px;
-    }
     .hero-extra-actions {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      margin-top: 0.5rem;
+      gap: 0.45rem;
       flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .hero-extra-actions .hero-action-pill {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all 0.15s;
+    }
+    .hero-extra-actions .hero-action-pill:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+    .hero-extra-actions .hero-action-pill.magic {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      border-color: transparent;
+      box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
     }
 
     @media (max-width: 600px) {
@@ -2283,9 +2301,9 @@
           <button class="hero-btn eq" onclick="openEqModal()" title="Sound Equalizer">🎛️ EQ</button>
         </div>
         <div class="hero-extra-actions">
-          <button class="hero-btn magic" onclick="loadMagicMix(currentTrackIndex)" title="Auto-find 10 matching songs">✨ Magic Mix</button>
-          <button class="hero-btn" onclick="openLyricsModal()" title="Live Lyrics & Karaoke">📜 Lyrics</button>
-          <button class="hero-btn" onclick="toggleMpcDrawer()" title="16-Pad MPC Beatpad">🥁 Beatpad</button>
+          <button class="hero-action-pill magic" onclick="loadMagicMix(currentTrackIndex)" title="Auto-find 10 matching songs">✨ Magic Mix</button>
+          <button class="hero-action-pill" onclick="openLyricsModal()" title="Live Lyrics & Karaoke">📜 Lyrics</button>
+          <button class="hero-action-pill" onclick="toggleMpcDrawer()" title="16-Pad MPC Beatpad">🥁 Beatpad</button>
         </div>
       </div>
     </div>
