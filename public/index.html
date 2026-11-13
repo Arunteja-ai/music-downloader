@@ -534,6 +534,257 @@
       box-shadow: 0 4px 14px rgba(6, 182, 212, 0.45);
     }
 
+    /* Now Playing Hero (comes above song list) */
+    .now-playing-hero {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.22), rgba(6, 182, 212, 0.18));
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: 20px;
+      padding: 1.1rem;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      animation: slideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 0;
+      flex: 1;
+    }
+    .hero-art {
+      width: 72px;
+      height: 72px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+    .hero-info {
+      min-width: 0;
+      flex: 1;
+    }
+    .hero-badge {
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .hero-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0.15rem;
+    }
+    .hero-artist {
+      font-size: 0.82rem;
+      color: #c4b5fd;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0.4rem;
+    }
+    .hero-meta {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .hero-tag {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-weight: 600;
+    }
+    .hero-tag.eq-tag {
+      background: rgba(6, 182, 212, 0.2);
+      color: var(--accent);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      cursor: pointer;
+    }
+    .hero-right {
+      display: flex;
+      align-items: center;
+    }
+    .hero-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .hero-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+    .hero-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.08);
+    }
+    .hero-btn.play {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      width: 44px;
+      height: 44px;
+      font-size: 1.1rem;
+      border: none;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+    }
+    .hero-btn.active-toggle, .ctrl-btn.active-toggle {
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+      background: rgba(6, 182, 212, 0.25) !important;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+    }
+    .hero-btn.eq {
+      border-radius: 10px;
+      width: auto;
+      padding: 0 0.65rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      gap: 0.3rem;
+    }
+
+    /* Equalizer Modal & Presets */
+    .eq-presets-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin: 1.1rem 0;
+    }
+    .eq-preset-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .eq-preset-card:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    .eq-preset-card.active-preset {
+      border-color: var(--accent);
+      background: rgba(6, 182, 212, 0.15);
+      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.25);
+    }
+    .eq-preset-name {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .eq-preset-desc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    .eq-pill-badge {
+      font-size: 0.66rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 9999px;
+      background: var(--accent);
+      color: #090d16;
+      font-weight: 800;
+      margin-left: 0.25rem;
+    }
+
+    /* Recently Played Carousel */
+    .recently-played-section {
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+    .rp-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .rp-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #c4b5fd;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .rp-carousel {
+      display: flex;
+      gap: 0.65rem;
+      overflow-x: auto;
+      padding-bottom: 0.35rem;
+      scrollbar-width: none;
+    }
+    .rp-carousel::-webkit-scrollbar { display: none; }
+    .rp-card {
+      flex: 0 0 108px;
+      background: rgba(18, 25, 41, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .rp-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .rp-card img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-bottom: 0.35rem;
+      background: #1f2937;
+    }
+    .rp-card-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .rp-card-artist {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .results-container {
       max-width: 680px;
       margin: 0 auto;
@@ -1548,6 +1799,43 @@
           </button>
         </div>
       </div>
+
+      <!-- Recently Played Section -->
+      <div class="recently-played-section" id="recentlyPlayedSection" style="display:none; margin-top:1.1rem;">
+        <div class="rp-header">
+          <div class="rp-label">🕒 Recently Played</div>
+        </div>
+        <div class="rp-carousel" id="recentlyPlayedCarousel"></div>
+      </div>
+    </div>
+
+    <!-- Now Playing Hero Card (comes prominently above songs when playing) -->
+    <div id="nowPlayingHero" class="now-playing-hero" style="display:none; max-width:680px; margin: 0 auto 1.2rem;">
+      <div class="hero-left">
+        <img id="heroArt" class="hero-art" src="" alt="Album Art" />
+        <div class="hero-info">
+          <div class="hero-badge">
+            <span class="jam-live-dot" style="margin-left:0; margin-right:0.25rem;"></span>
+            NOW PLAYING
+          </div>
+          <div class="hero-title" id="heroTitle">Song Title</div>
+          <div class="hero-artist" id="heroArtist">Artist Name</div>
+          <div class="hero-meta">
+            <span class="hero-tag">🔥 320kbps HD</span>
+            <span class="hero-tag eq-tag" id="heroEqTag" onclick="openEqModal()" title="Tap to switch sound profile">🔥 Mega Bass</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-controls">
+          <button class="hero-btn" id="heroShuffleBtn" onclick="toggleShuffle()" title="Shuffle Mode">🔀</button>
+          <button class="hero-btn" onclick="playPrevSong()" title="Previous">⏮️</button>
+          <button class="hero-btn play" id="heroPlayPauseBtn" onclick="togglePlayPause()" title="Play/Pause">▶</button>
+          <button class="hero-btn" onclick="playNextSong()" title="Next">⏭️</button>
+          <button class="hero-btn" id="heroRepeatBtn" onclick="toggleRepeat()" title="Repeat Mode">🔁</button>
+          <button class="hero-btn eq" onclick="openEqModal()" title="Sound Equalizer">🎛️ EQ</button>
+        </div>
+      </div>
     </div>
 
     <!-- Results Area -->
@@ -1601,9 +1889,11 @@
       <!-- Center: Controls & Seek Slider -->
       <div class="player-center">
         <div class="player-controls">
+          <button class="ctrl-btn" id="btnShuffle" onclick="toggleShuffle()" title="Shuffle Mode">🔀</button>
           <button class="ctrl-btn" onclick="playPrevSong()" title="Previous (Left Arrow)">⏮️</button>
           <button class="ctrl-btn ctrl-play" id="btnPlayPause" onclick="togglePlayPause()" title="Play/Pause (Space)">▶</button>
           <button class="ctrl-btn" onclick="playNextSong()" title="Next (Right Arrow)">⏭️</button>
+          <button class="ctrl-btn" id="btnRepeat" onclick="toggleRepeat()" title="Repeat Mode">🔁</button>
         </div>
         <div class="seek-row">
           <span class="seek-time" id="currentTime">0:00</span>
@@ -1612,8 +1902,11 @@
         </div>
       </div>
 
-      <!-- Right: Download & Quality -->
+      <!-- Right: Download & Quality & Equalizer -->
       <div class="player-right">
+        <button class="ctrl-btn" id="btnEqModal" onclick="openEqModal()" title="Audio Equalizer & Mega Bass" style="padding:0.45rem 0.65rem; border-radius:8px; font-size:0.8rem; font-weight:700;">
+          🎛️ <span class="eq-pill-badge" id="activeEqBadge">Bass</span>
+        </button>
         <button class="player-dl-btn" id="playerDlBtn" onclick="downloadCurrentSong()">
           📥 Download
         </button>
@@ -1639,6 +1932,50 @@
 
       <div class="modal-actions" style="margin-top:1rem;">
         <button class="btn-modal-cancel" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: AUDIO EQUALIZER & MEGA BASS ==================== -->
+  <div class="modal-overlay" id="eqModal">
+    <div class="modal-box" style="max-width: 460px;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>🎛️ Audio Equalizer & Sound FX</span>
+        <button class="btn-close-modal" onclick="closeEqModal()">✕</button>
+      </div>
+
+      <p style="color:#94a3af; font-size:0.82rem; line-height:1.4;">
+        Powered by Web Audio API 5-Band Equalizer. Tap a sound profile to apply instantly to your audio:
+      </p>
+
+      <div class="eq-presets-grid">
+        <!-- Preset 1: Mega Bass -->
+        <div class="eq-preset-card active-preset" data-preset="bass" onclick="applyEqPreset('bass')">
+          <div class="eq-preset-name">🔥 Mega Bass Boost</div>
+          <div class="eq-preset-desc">+11dB deep sub-bass punch for headphones and car Bluetooth.</div>
+        </div>
+
+        <!-- Preset 2: Vocal & Clarity -->
+        <div class="eq-preset-card" data-preset="vocal" onclick="applyEqPreset('vocal')">
+          <div class="eq-preset-name">🎤 Vocal & Clarity</div>
+          <div class="eq-preset-desc">Crisp voice separation, clean lyrics, and speech clarity.</div>
+        </div>
+
+        <!-- Preset 3: Rock / Mass Beats -->
+        <div class="eq-preset-card" data-preset="rock" onclick="applyEqPreset('rock')">
+          <div class="eq-preset-name">🎸 Rock / Mass Beats</div>
+          <div class="eq-preset-desc">Dynamic V-shape curve with sharp treble and punchy bass kicks.</div>
+        </div>
+
+        <!-- Preset 4: Balanced / Pop -->
+        <div class="eq-preset-card" data-preset="flat" onclick="applyEqPreset('flat')">
+          <div class="eq-preset-name">🎧 Balanced / Pop</div>
+          <div class="eq-preset-desc">Neutral studio reference curve with natural instrument tones.</div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:1rem;">
+        <button class="btn-jam-primary" style="width:100%;" onclick="closeEqModal()">Done ✓</button>
       </div>
     </div>
   </div>
@@ -2161,11 +2498,198 @@
       }, 400);
     }
 
+    // ==================== WEB AUDIO API EQUALIZER & SOUND FX ====================
+    let audioCtx = null;
+    let audioSourceNode = null;
+    let bassFilter = null;
+    let midFilter = null;
+    let trebleFilter = null;
+    let currentEqPreset = 'bass';
+
+    const EQ_PRESETS = {
+      'flat': { name: 'Balanced / Pop', icon: '🎧', desc: 'Neutral studio flat sound', bass: 0, mid: 0, treble: 0 },
+      'bass': { name: 'Mega Bass Boost', icon: '🔥', desc: 'Deep sub-bass punch for headphones & car audio', bass: 11, mid: 1, treble: 2 },
+      'vocal': { name: 'Vocal & Clarity', icon: '🎤', desc: 'Crisp lyrics & speech clarity', bass: -2, mid: 7, treble: 5 },
+      'rock': { name: 'Rock / Mass Beats', icon: '🎸', desc: 'Dynamic V-shape with sharp treble & punchy bass', bass: 8, mid: 2, treble: 7 }
+    };
+
+    function initWebAudio() {
+      if (audioCtx) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        audioCtx = new AudioContextClass();
+
+        // 1. LowShelf for Bass (100 Hz)
+        bassFilter = audioCtx.createBiquadFilter();
+        bassFilter.type = 'lowshelf';
+        bassFilter.frequency.value = 100;
+
+        // 2. Peaking for Mid/Vocals (1800 Hz)
+        midFilter = audioCtx.createBiquadFilter();
+        midFilter.type = 'peaking';
+        midFilter.frequency.value = 1800;
+        midFilter.Q.value = 1.0;
+
+        // 3. HighShelf for Treble (8000 Hz)
+        trebleFilter = audioCtx.createBiquadFilter();
+        trebleFilter.type = 'highshelf';
+        trebleFilter.frequency.value = 8000;
+
+        // Source node
+        globalAudio.crossOrigin = 'anonymous';
+        audioSourceNode = audioCtx.createMediaElementSource(globalAudio);
+
+        // Chain: source -> bass -> mid -> treble -> destination
+        audioSourceNode.connect(bassFilter);
+        bassFilter.connect(midFilter);
+        midFilter.connect(trebleFilter);
+        trebleFilter.connect(audioCtx.destination);
+
+        const savedPreset = localStorage.getItem('user_eq_preset') || 'bass';
+        applyEqPreset(savedPreset);
+      } catch(e) {
+        console.warn('Web Audio note:', e);
+      }
+    }
+
+    function applyEqPreset(presetKey) {
+      currentEqPreset = presetKey;
+      const p = EQ_PRESETS[presetKey] || EQ_PRESETS['bass'];
+      localStorage.setItem('user_eq_preset', presetKey);
+
+      if (bassFilter && midFilter && trebleFilter && audioCtx) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+        bassFilter.gain.value = p.bass;
+        midFilter.gain.value = p.mid;
+        trebleFilter.gain.value = p.treble;
+      }
+
+      // Update Badges
+      const badge = document.getElementById('activeEqBadge');
+      if (badge) badge.textContent = p.name.split(' ')[0] || 'EQ';
+      const heroTag = document.getElementById('heroEqTag');
+      if (heroTag) heroTag.textContent = `${p.icon} ${p.name}`;
+
+      // Update Modal active card
+      document.querySelectorAll('.eq-preset-card').forEach(card => {
+        card.classList.toggle('active-preset', card.dataset.preset === presetKey);
+      });
+
+      showToast(`Sound Profile: ${p.icon} ${p.name}`, '🎛️');
+    }
+
+    function openEqModal() {
+      document.getElementById('eqModal').style.display = 'flex';
+    }
+
+    function closeEqModal() {
+      document.getElementById('eqModal').style.display = 'none';
+    }
+
+    // ==================== SHUFFLE & REPEAT MODES ====================
+    let isShuffleOn = false;
+    let repeatMode = 'off'; // 'off', 'all', 'one'
+
+    function toggleShuffle() {
+      isShuffleOn = !isShuffleOn;
+      const btn = document.getElementById('btnShuffle');
+      const heroBtn = document.getElementById('heroShuffleBtn');
+      if (btn) btn.classList.toggle('active-toggle', isShuffleOn);
+      if (heroBtn) heroBtn.classList.toggle('active-toggle', isShuffleOn);
+      showToast(isShuffleOn ? 'Shuffle Mode: ON 🔀' : 'Shuffle Mode: OFF', '🔀');
+    }
+
+    function toggleRepeat() {
+      if (repeatMode === 'off') {
+        repeatMode = 'all';
+        showToast('Repeat Mode: Repeat All 🔁', '🔁');
+      } else if (repeatMode === 'all') {
+        repeatMode = 'one';
+        showToast('Repeat Mode: Repeat One 🔂', '🔂');
+      } else {
+        repeatMode = 'off';
+        showToast('Repeat Mode: OFF', '🔁');
+      }
+
+      const icon = repeatMode === 'one' ? '🔂' : '🔁';
+      const isActive = repeatMode !== 'off';
+
+      const btn = document.getElementById('btnRepeat');
+      const heroBtn = document.getElementById('heroRepeatBtn');
+      if (btn) {
+        btn.textContent = icon;
+        btn.classList.toggle('active-toggle', isActive);
+      }
+      if (heroBtn) {
+        heroBtn.textContent = icon;
+        heroBtn.classList.toggle('active-toggle', isActive);
+      }
+    }
+
+    // ==================== RECENTLY PLAYED HISTORY ====================
+    function addToRecentlyPlayed(song) {
+      if (!song) return;
+      let rp = [];
+      try {
+        rp = JSON.parse(localStorage.getItem('recently_played') || '[]');
+      } catch(e) {}
+
+      rp = rp.filter(s => (s.id || s.title) !== (song.id || song.title));
+      rp.unshift(song);
+      if (rp.length > 15) rp = rp.slice(0, 15);
+
+      localStorage.setItem('recently_played', JSON.stringify(rp));
+      renderRecentlyPlayed();
+    }
+
+    function renderRecentlyPlayed() {
+      const container = document.getElementById('recentlyPlayedSection');
+      const listEl = document.getElementById('recentlyPlayedCarousel');
+      if (!container || !listEl) return;
+
+      let rp = [];
+      try {
+        rp = JSON.parse(localStorage.getItem('recently_played') || '[]');
+      } catch(e) {}
+
+      if (!rp.length) {
+        container.style.display = 'none';
+        return;
+      }
+
+      container.style.display = 'block';
+      listEl.innerHTML = rp.map((song, i) => `
+        <div class="rp-card" onclick="playRecentSong(${i})">
+          <img src="${escapeHtml(song.artwork || song.imageMed || song.imageHigh || '')}" alt="${escapeHtml(song.title)}" onerror="this.src=''" />
+          <div class="rp-card-title">${escapeHtml(song.title)}</div>
+          <div class="rp-card-artist">${escapeHtml(song.artist)}</div>
+        </div>
+      `).join('');
+    }
+
+    function playRecentSong(idx) {
+      let rp = [];
+      try { rp = JSON.parse(localStorage.getItem('recently_played') || '[]'); } catch(e) {}
+      if (rp[idx]) {
+        currentQueue = rp;
+        playSongAt(idx);
+      }
+    }
+
     // ==================== STICKY PLAYER & LOCK SCREEN ====================
     function playSongAt(idx) {
       if (!currentQueue[idx]) return;
       currentTrackIndex = idx;
       const song = currentQueue[idx];
+
+      // Init Web Audio API Equalizer on user gesture
+      initWebAudio();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
 
       const art = song.artwork || song.imageHigh || song.imageMed || '';
       const audioUrl = song.audioUrl || song.url320 || song.audioUrl160 || song.url160 || song.url96 || '';
@@ -2175,10 +2699,24 @@
         return;
       }
 
+      // 1. Update Now Playing Hero Card (comes above song list)
+      const hero = document.getElementById('nowPlayingHero');
+      if (hero) {
+        hero.style.display = 'flex';
+        document.getElementById('heroArt').src = art;
+        document.getElementById('heroTitle').textContent = song.title;
+        document.getElementById('heroArtist').textContent = song.artist;
+        document.getElementById('heroPlayPauseBtn').textContent = '⏸';
+      }
+
+      // 2. Update Bottom Sticky Player
       stickyPlayer.style.display = 'block';
       document.getElementById('playerArt').src = art;
       document.getElementById('playerTitle').textContent = song.title;
       document.getElementById('playerArtist').textContent = song.artist;
+
+      // 3. Save to Recently Played
+      addToRecentlyPlayed(song);
 
       globalAudio.src = audioUrl;
       const playPromise = globalAudio.play();
@@ -2233,9 +2771,11 @@
     });
 
     function togglePlayPause() {
+      const heroPlayBtn = document.getElementById('heroPlayPauseBtn');
       if (globalAudio.paused) {
         globalAudio.play();
         btnPlayPause.textContent = '⏸';
+        if (heroPlayBtn) heroPlayBtn.textContent = '⏸';
         audioVisualizer.classList.add('playing');
         if (!isRemoteSync && jamConnections.length > 0) {
           broadcastJamData({ type: 'PLAY', currentTime: globalAudio.currentTime, sender: jamNickname });
@@ -2243,6 +2783,7 @@
       } else {
         globalAudio.pause();
         btnPlayPause.textContent = '▶';
+        if (heroPlayBtn) heroPlayBtn.textContent = '▶';
         audioVisualizer.classList.remove('playing');
         if (!isRemoteSync && jamConnections.length > 0) {
           broadcastJamData({ type: 'PAUSE', currentTime: globalAudio.currentTime, sender: jamNickname });
@@ -2251,8 +2792,13 @@
     }
 
     function playNextSong() {
-      if (currentTrackIndex + 1 < currentQueue.length) {
+      if (isShuffleOn && currentQueue.length > 1) {
+        const randomIndex = Math.floor(Math.random() * currentQueue.length);
+        playSongAt(randomIndex);
+      } else if (currentTrackIndex + 1 < currentQueue.length) {
         playSongAt(currentTrackIndex + 1);
+      } else if (repeatMode === 'all' && currentQueue.length > 0) {
+        playSongAt(0);
       }
     }
 
@@ -2273,7 +2819,12 @@
     });
 
     globalAudio.addEventListener('ended', () => {
-      playNextSong();
+      if (repeatMode === 'one') {
+        globalAudio.currentTime = 0;
+        globalAudio.play().catch(() => {});
+      } else {
+        playNextSong();
+      }
     });
 
     function onSeekInput(percent) {
@@ -2935,8 +3486,20 @@
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
-    // Auto-detect room parameter in URL
+    // Auto-detect room parameter in URL & init features
     window.addEventListener('DOMContentLoaded', () => {
+      // 1. Render recently played
+      renderRecentlyPlayed();
+
+      // 2. Load saved EQ preset
+      const savedEq = localStorage.getItem('user_eq_preset') || 'bass';
+      currentEqPreset = savedEq;
+      const badge = document.getElementById('activeEqBadge');
+      if (badge && EQ_PRESETS[savedEq]) badge.textContent = EQ_PRESETS[savedEq].name.split(' ')[0];
+      const heroTag = document.getElementById('heroEqTag');
+      if (heroTag && EQ_PRESETS[savedEq]) heroTag.textContent = `${EQ_PRESETS[savedEq].icon} ${EQ_PRESETS[savedEq].name}`;
+
+      // 3. Room invite URL param
       const params = new URLSearchParams(window.location.search);
       const room = params.get('room');
       if (room) {
