@@ -1406,6 +1406,14 @@
           return;
         }
 
+        // Normalize songs
+        results.forEach(song => {
+          song.artwork = song.artwork || song.imageHigh || song.imageMed || '';
+          song.audioUrl = song.audioUrl || song.url320 || song.url160 || song.url96 || '';
+          song.audioUrl160 = song.audioUrl160 || song.url160 || song.audioUrl;
+          song.audioUrl96 = song.audioUrl96 || song.url96 || song.audioUrl160;
+        });
+
         searchCache.set(query, results);
         currentQueue = results;
         renderResults(results);
@@ -1431,12 +1439,13 @@
         const year = song.year ? ` • ${song.year}` : '';
         const dur = song.duration ? ` • ⏱️ ${song.duration}` : '';
         const isFav = favList.some(s => s.id === song.id || s.title === title);
+        const art = song.artwork || song.imageHigh || song.imageMed || '';
 
         html += `
           <div class="song-card">
             <div class="song-header">
               <div class="art-wrapper" onclick="playSongAt(${idx})">
-                <img class="song-art" src="${escapeHtml(song.artwork)}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2276%22 height=%2276%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23888%22 stroke-width=%222%22><rect width=%2218%22 height=%2218%22 x=%223%22 y=%223%22 rx=%222%22/><circle cx=%2212%22 cy=%2212%22 r=%224%22/></svg>'">
+                <img class="song-art" src="${escapeHtml(art)}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2276%22 height=%2276%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23888%22 stroke-width=%222%22><rect width=%2218%22 height=%2218%22 x=%223%22 y=%223%22 rx=%222%22/><circle cx=%2212%22 cy=%2212%22 r=%224%22/></svg>'">
                 <div class="play-overlay">▶</div>
               </div>
               <div class="song-details">
@@ -1487,16 +1496,39 @@
       currentTrackIndex = idx;
       const song = currentQueue[idx];
 
+      const art = song.artwork || song.imageHigh || song.imageMed || '';
+      const audioUrl = song.audioUrl || song.url320 || song.audioUrl160 || song.url160 || song.url96 || '';
+
+      if (!audioUrl) {
+        showToast('Audio stream unavailable for this track', '⚠️');
+        return;
+      }
+
       stickyPlayer.style.display = 'block';
-      document.getElementById('playerArt').src = song.artwork || '';
+      document.getElementById('playerArt').src = art;
       document.getElementById('playerTitle').textContent = song.title;
       document.getElementById('playerArtist').textContent = song.artist;
 
-      const audioUrl = song.audioUrl || song.audioUrl160;
       globalAudio.src = audioUrl;
-      globalAudio.play().catch(() => {});
-      btnPlayPause.textContent = '⏸';
-      audioVisualizer.classList.add('playing');
+      const playPromise = globalAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          btnPlayPause.textContent = '⏸';
+          audioVisualizer.classList.add('playing');
+        }).catch(err => {
+          console.warn('Playback error, trying 160k fallback:', err);
+          const fallbackUrl = song.audioUrl160 || song.url160;
+          if (fallbackUrl && fallbackUrl !== audioUrl) {
+            globalAudio.src = fallbackUrl;
+            globalAudio.play().then(() => {
+              btnPlayPause.textContent = '⏸';
+              audioVisualizer.classList.add('playing');
+            }).catch(e => {
+              showToast('Click play to allow audio', 'ℹ️');
+            });
+          }
+        });
+      }
 
       // Native Lock-Screen Media Controls (Android / iOS / Windows)
       if ('mediaSession' in navigator) {
@@ -1504,7 +1536,7 @@
           title: song.title,
           artist: song.artist,
           album: song.album || 'Music Downloader',
-          artwork: [{ src: song.artwork, sizes: '512x512', type: 'image/jpeg' }]
+          artwork: [{ src: art, sizes: '512x512', type: 'image/jpeg' }]
         });
         navigator.mediaSession.setActionHandler('play', () => { globalAudio.play(); });
         navigator.mediaSession.setActionHandler('pause', () => { globalAudio.pause(); });
@@ -1600,9 +1632,14 @@
       const qSelect = document.getElementById(`quality_${idx}`);
       const q = qSelect ? qSelect.value : '320';
 
-      let targetUrl = song.audioUrl;
-      if (q === '160' && song.audioUrl160) targetUrl = song.audioUrl160;
-      if (q === '96' && song.audioUrl96) targetUrl = song.audioUrl96;
+      let targetUrl = song.audioUrl || song.url320;
+      if (q === '160') targetUrl = song.audioUrl160 || song.url160 || targetUrl;
+      if (q === '96') targetUrl = song.audioUrl96 || song.url96 || targetUrl;
+
+      if (!targetUrl) {
+        showToast('Download link not available for this track', '⚠️');
+        return;
+      }
 
       const fileName = `${song.artist} - ${song.title} (${q}kbps).mp3`;
       showToast(`Starting ${q}kbps download...`, '⏳');
@@ -1692,18 +1729,22 @@
         return;
       }
 
-      listEl.innerHTML = tracks.map((song, i) => `
+      listEl.innerHTML = tracks.map((song, i) => {
+        const art = song.artwork || song.imageHigh || song.imageMed || '';
+        const dlUrl = song.audioUrl || song.url320 || '';
+        return `
         <div class="pl-track-item">
-          <img src="${escapeHtml(song.artwork)}" style="width:44px; height:44px; border-radius:8px; object-fit:cover;" onerror="this.src=''" />
+          <img src="${escapeHtml(art)}" style="width:44px; height:44px; border-radius:8px; object-fit:cover;" onerror="this.src=''" />
           <div style="flex:1; min-width:0;">
             <div style="font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(song.title)}</div>
             <div style="font-size:0.78rem; color:#c4b5fd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(song.artist)} • ${escapeHtml(song.duration || 'Full')}</div>
           </div>
           <button class="btn-icon-action" style="padding:0.4rem 0.6rem;" onclick="playFromPlaylist(${i})">▶️</button>
-          <button class="btn-icon-action" style="padding:0.4rem 0.6rem;" onclick="triggerDownload('${escapeJsString(song.audioUrl)}', '${escapeJsString(song.artist)} - ${escapeJsString(song.title)}.mp3')">📥</button>
+          <button class="btn-icon-action" style="padding:0.4rem 0.6rem;" onclick="triggerDownload('${escapeJsString(dlUrl)}', '${escapeJsString(song.artist)} - ${escapeJsString(song.title)}.mp3')">📥</button>
           <button class="btn-icon-action" style="padding:0.4rem 0.6rem; color:#ef4444;" onclick="removeSongFromFolder(${i})">✕</button>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     function playFromPlaylist(idx) {

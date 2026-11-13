@@ -42,15 +42,24 @@ async function searchItunesFallback(query) {
       const artHigh = (item.artworkUrl100 || '').replace('100x100bb', '600x600bb');
       const artMed = (item.artworkUrl100 || '').replace('100x100bb', '300x300bb');
       const preview = item.previewUrl;
+      const durSec = item.trackTimeMillis ? Math.round(item.trackTimeMillis / 1000) : 0;
+      const mins = Math.floor(durSec / 60);
+      const secs = (durSec % 60).toString().padStart(2, '0');
+
       return {
         id: 'itunes_' + item.trackId,
         title: item.trackName || 'Unknown Title',
         artist: item.artistName || 'Unknown Artist',
         album: item.collectionName || '',
         year: item.releaseDate ? item.releaseDate.substring(0, 4) : '',
-        duration: Math.round((item.trackTimeMillis || 0) / 1000),
+        duration: durSec ? `${mins}:${secs}` : '',
+        durationSec: durSec,
         imageHigh: artHigh,
         imageMed: artMed,
+        artwork: artHigh || artMed,
+        audioUrl: preview,
+        audioUrl160: preview,
+        audioUrl96: preview,
         url320: preview,
         url160: preview,
         url96: preview,
@@ -103,6 +112,9 @@ exports.handler = async (event, context) => {
         const rawImg = song.image || '';
         const imageHigh = rawImg.replace(/150x150\.jpg$/, '500x500.jpg');
         const imageMed = rawImg.replace(/150x150\.jpg$/, '250x250.jpg');
+        const durSec = parseInt(song.duration, 10) || 0;
+        const mins = Math.floor(durSec / 60);
+        const secs = (durSec % 60).toString().padStart(2, '0');
 
         results.push({
           id: song.id,
@@ -110,9 +122,14 @@ exports.handler = async (event, context) => {
           artist: decodeEntities(song.primary_artists || song.singers || song.music || ''),
           album: decodeEntities(song.album),
           year: song.year,
-          duration: parseInt(song.duration, 10) || 0,
+          duration: durSec ? `${mins}:${secs}` : 'Full Song',
+          durationSec: durSec,
           imageHigh,
           imageMed,
+          artwork: imageHigh || imageMed,
+          audioUrl: decryptedUrls.url320,
+          audioUrl160: decryptedUrls.url160,
+          audioUrl96: decryptedUrls.url96,
           url320: decryptedUrls.url320,
           url160: decryptedUrls.url160,
           url96: decryptedUrls.url96,
