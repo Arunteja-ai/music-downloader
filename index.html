@@ -1667,7 +1667,7 @@
           <div class="jam-action-card">
             <h4>👑 Host a Party</h4>
             <p>Create a room and invite your friend with a 1-tap link.</p>
-            <button class="btn-jam-primary" onclick="createJamRoom()">
+            <button class="btn-jam-primary" id="btnCreateJam" onclick="createJamRoom()">
               Create Room 🚀
             </button>
           </div>
@@ -1678,10 +1678,11 @@
             <p>Enter your friend's room code to listen in sync.</p>
             <div style="display:flex; gap:0.5rem;">
               <input type="text" class="modal-input" id="jamJoinCodeInput" placeholder="Code (e.g. 4821)" maxlength="10" style="text-transform:uppercase; margin-bottom:0;" />
-              <button class="btn-jam-accent" onclick="joinJamRoom()">
+              <button class="btn-jam-accent" id="btnJoinJam" onclick="joinJamRoom()">
                 Join 🎧
               </button>
             </div>
+            <div id="jamJoinStatus" style="font-size:0.78rem; margin-top:0.65rem; display:none; line-height:1.4;"></div>
           </div>
         </div>
       </div>
@@ -1702,9 +1703,12 @@
           <button class="btn-copy-code" onclick="copyJamInviteLink()">📋 Copy Invite Link</button>
         </div>
 
-        <div style="margin:1rem 0;">
+        <div style="margin:0.8rem 0;">
           <button class="btn-whatsapp-share" onclick="shareJamWhatsApp()">
             📲 Invite Friends on WhatsApp
+          </button>
+          <button class="btn-copy-code" style="margin-top:0.6rem; width:100%; border-color:rgba(6, 182, 212, 0.4); color:var(--accent);" onclick="openTestSecondTab()">
+            🧪 Open 2nd Tab to Test Sync (Simulate Friend)
           </button>
         </div>
 
@@ -2609,9 +2613,24 @@
       }
     }
 
+    const PEER_CONFIG = {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      }
+    };
+
     function createJamRoom() {
       const nameInput = document.getElementById('jamNicknameInput').value.trim();
       if (nameInput) jamNickname = nameInput;
+
+      const btn = document.getElementById('btnCreateJam');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Creating... ⏳';
+      }
 
       const randomNum = Math.floor(1000 + Math.random() * 9000);
       const roomCode = `JAM-${randomNum}`;
@@ -2623,12 +2642,14 @@
         try { peer.destroy(); } catch (e) {}
       }
 
-      peer = new Peer(peerId);
+      peer = new Peer(peerId, PEER_CONFIG);
 
       peer.on('open', () => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Create Room 🚀'; }
         isJamHost = true;
         currentJamRoomCode = roomCode;
         updateJamRoomUI(true, roomCode);
+        openJamChatDrawer();
         showToast(`Room created: ${roomCode}! 🚀`, '🎉');
       });
 
@@ -2651,6 +2672,7 @@
 
       peer.on('error', (err) => {
         console.error('Peer error:', err);
+        if (btn) { btn.disabled = false; btn.textContent = 'Create Room 🚀'; }
         showToast('Connection error. Trying again...', '⚠️');
       });
     }
@@ -2660,7 +2682,15 @@
       if (nameInput) jamNickname = nameInput;
 
       let code = codeArg || document.getElementById('jamJoinCodeInput').value.trim().toUpperCase();
+      const statusEl = document.getElementById('jamJoinStatus');
+      const joinBtn = document.getElementById('btnJoinJam');
+
       if (!code) {
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.style.color = '#f59e0b';
+          statusEl.textContent = '⚠️ Please enter a room code (e.g. 4821)';
+        }
         showToast('Please enter a room code', '⚠️');
         return;
       }
@@ -2669,31 +2699,81 @@
       }
 
       const peerId = `mmd-${code.toLowerCase()}`;
+      if (joinBtn) {
+        joinBtn.disabled = true;
+        joinBtn.textContent = 'Joining... ⏳';
+      }
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.style.color = '#38bdf8';
+        statusEl.textContent = `⏳ Searching for room "${code}"...`;
+      }
       showToast(`Connecting to ${code}...`, '⏳');
 
       if (peer) {
         try { peer.destroy(); } catch (e) {}
       }
 
-      peer = new Peer();
+      let joinTimeout = setTimeout(() => {
+        if (joinBtn) { joinBtn.disabled = false; joinBtn.textContent = 'Join 🎧'; }
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.style.color = '#ef4444';
+          statusEl.innerHTML = `❌ <strong>Room "${code}" not found.</strong><br/>Ask your friend to tap <em>"Create Room 🚀"</em> first so the party is live!`;
+        }
+        showToast(`Room ${code} is offline or not found`, '❌');
+        if (peer) { try { peer.destroy(); } catch(e){} peer = null; }
+      }, 7000);
+
+      peer = new Peer(null, PEER_CONFIG);
 
       peer.on('open', () => {
         const conn = peer.connect(peerId, { metadata: { name: jamNickname } });
         setupConnection(conn);
 
         conn.on('open', () => {
+          clearTimeout(joinTimeout);
+          if (joinBtn) { joinBtn.disabled = false; joinBtn.textContent = 'Join 🎧'; }
+          if (statusEl) statusEl.style.display = 'none';
+
           isJamHost = false;
           currentJamRoomCode = code;
           updateJamRoomUI(true, code);
+          closeJamModal();
+          openJamChatDrawer();
           showToast(`Connected to ${code}! 🎧`, '🎉');
           addSystemChatMessage(`Connected to ${code}! You are now listening together.`);
+        });
+
+        conn.on('error', (err) => {
+          clearTimeout(joinTimeout);
+          if (joinBtn) { joinBtn.disabled = false; joinBtn.textContent = 'Join 🎧'; }
+          if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.style.color = '#ef4444';
+            statusEl.textContent = '❌ Failed to connect to room. Please try again.';
+          }
         });
       });
 
       peer.on('error', (err) => {
         console.error(err);
-        showToast('Could not find room. Check code & try again.', '❌');
+        clearTimeout(joinTimeout);
+        if (joinBtn) { joinBtn.disabled = false; joinBtn.textContent = 'Join 🎧'; }
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.style.color = '#ef4444';
+          statusEl.innerHTML = `❌ <strong>Room "${code}" not found.</strong><br/>Check the code or ask your friend to create the room first!`;
+        }
+        showToast('Room not found. Check code & try again.', '❌');
       });
+    }
+
+    function openTestSecondTab() {
+      if (!currentJamRoomCode) return;
+      const testUrl = `${window.location.origin}${window.location.pathname}?room=${currentJamRoomCode}`;
+      window.open(testUrl, '_blank');
+      showToast('Opened test tab! Arrange windows side by side to see sync.', '🧪');
     }
 
     function setupConnection(conn) {
