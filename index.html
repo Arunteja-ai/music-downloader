@@ -202,38 +202,45 @@
     /* Main View Switcher */
     .view-switcher {
       display: flex;
-      max-width: 400px;
-      margin: 0.8rem auto 1.2rem;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 0.3rem;
-      border-radius: 50px;
-      border: 1px solid var(--card-border);
+      max-width: 680px;
+      margin: 0.8rem auto 1.4rem;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.35rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       position: relative;
-      z-index: 1;
+      z-index: 10;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .view-tab {
-      flex: 1;
-      text-align: center;
-      padding: 0.5rem 0.8rem;
-      border-radius: 50px;
+      padding: 0.55rem 1rem;
+      border-radius: 12px;
       background: transparent;
-      color: var(--text-muted);
+      color: #94a3af;
       border: none;
-      font-size: 0.88rem;
-      font-weight: 600;
+      font-size: 0.86rem;
+      font-weight: 700;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 0.4rem;
       transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .view-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
     }
 
     .view-tab.active {
       background: linear-gradient(135deg, var(--primary), var(--accent));
       color: #fff;
-      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35);
     }
 
     .tab-badge {
@@ -536,22 +543,28 @@
 
     /* Now Playing Hero (comes above song list) */
     .now-playing-hero {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.22), rgba(6, 182, 212, 0.18));
-      border: 1px solid rgba(139, 92, 246, 0.35);
+      background: linear-gradient(135deg, rgba(26, 34, 53, 0.95), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 20px;
-      padding: 1.1rem;
-      margin-bottom: 1.2rem;
+      padding: 1.25rem 1.4rem;
+      margin-bottom: 1.3rem;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
+      flex-direction: column;
       gap: 1rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(16px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(24px);
       animation: slideDown 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-16px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    .hero-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
     .hero-left {
       display: flex;
@@ -561,12 +574,12 @@
       flex: 1;
     }
     .hero-art {
-      width: 72px;
-      height: 72px;
+      width: 76px;
+      height: 76px;
       border-radius: 14px;
       object-fit: cover;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       flex-shrink: 0;
     }
     .hero-info {
@@ -584,7 +597,7 @@
       gap: 0.35rem;
     }
     .hero-title {
-      font-size: 1.05rem;
+      font-size: 1.12rem;
       font-weight: 800;
       color: #fff;
       white-space: nowrap;
@@ -593,7 +606,7 @@
       margin-bottom: 0.15rem;
     }
     .hero-artist {
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       color: #c4b5fd;
       white-space: nowrap;
       overflow: hidden;
@@ -619,24 +632,31 @@
       border: 1px solid rgba(6, 182, 212, 0.3);
       cursor: pointer;
     }
-    .hero-right {
+    .hero-vis-wrap {
       display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 0.5rem;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .hero-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 0.85rem;
+      flex-wrap: wrap;
     }
     .hero-controls {
       display: flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.5rem;
     }
     .hero-btn {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #fff;
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       cursor: pointer;
       display: flex;
@@ -2002,21 +2022,10 @@
       border-radius: 10px;
     }
 
-    /* 5. 16-Pad MPC Drum Machine Floating Drawer */
-    .mpc-drawer {
-      position: fixed;
-      bottom: 84px;
-      right: 18px;
-      width: 360px;
-      max-width: calc(100vw - 32px);
-      background: #0d1322;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 18px;
-      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85);
-      z-index: 99998;
-      padding: 1.1rem;
-      display: none;
-      backdrop-filter: blur(24px);
+    /* 5. 16-Pad MPC Drum Machine Modal */
+    .mpc-modal-box {
+      max-width: 440px;
+      width: 95%;
     }
     .mpc-header {
       display: flex;
@@ -2157,6 +2166,150 @@
       box-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
     }
 
+    /* Custom Radio Station & Reset Settings */
+    .btn-create-custom-station {
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    }
+    .btn-create-custom-station:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    }
+    .btn-reset-stations {
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 0.65rem 1rem;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: background 0.15s;
+    }
+    .btn-reset-stations:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: #fff;
+    }
+    .custom-station-badge {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .btn-del-station {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 0.2rem;
+      opacity: 0.75;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn-del-station:hover {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+    .emoji-selector {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .emoji-opt {
+      font-size: 1.3rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .emoji-opt:hover, .emoji-opt.active {
+      background: rgba(139, 92, 246, 0.3);
+      border-color: #a855f7;
+      transform: scale(1.1);
+    }
+    .settings-group {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1rem;
+    }
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .settings-row:last-child {
+      border-bottom: none;
+    }
+    .settings-row.danger {
+      margin-top: 0.3rem;
+      padding-top: 0.75rem;
+    }
+    .btn-setting-action {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .btn-setting-action:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+    .btn-setting-danger {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .btn-setting-danger:hover {
+      background: rgba(239, 68, 68, 0.35);
+      color: #fff;
+    }
+    .settings-select {
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.8rem;
+      outline: none;
+    }
+
     @media (max-width: 600px) {
       h1 { font-size: 1.7rem; }
       .search-box { padding: 0.3rem 0.35rem 0.3rem 1rem; }
@@ -2191,7 +2344,7 @@
     <p class="subtitle">Search, stream, create offline playlists & download full 320kbps tracks</p>
   </header>
 
-  <!-- View Switcher (Search vs My Playlists vs 24/7 Radio vs Listen Together) -->
+  <!-- View Switcher (Search vs My Playlists vs 24/7 Radio vs Listen Together vs Settings) -->
   <div class="view-switcher">
     <button class="view-tab active" id="tabSearch" onclick="switchView('search')">
       🔍 Search Music
@@ -2204,6 +2357,9 @@
     </button>
     <button class="view-tab jam-tab" id="tabJam" onclick="openJamModal()">
       🎧 Listen Together <span class="jam-live-dot" id="jamStatusDot" style="display:none;"></span>
+    </button>
+    <button class="view-tab" id="tabSettings" onclick="openSettingsModal()" title="Settings & Reset">
+      ⚙️ Settings
     </button>
   </div>
 
@@ -2274,36 +2430,43 @@
     </div>
 
     <!-- Now Playing Hero Card (comes prominently above songs when playing) -->
-    <div id="nowPlayingHero" class="now-playing-hero" style="display:none; max-width:680px; margin: 0 auto 1.2rem;">
-      <div class="hero-left">
-        <img id="heroArt" class="hero-art" src="" alt="Album Art" />
-        <div class="hero-info">
-          <div class="hero-badge">
-            <span class="jam-live-dot" style="margin-left:0; margin-right:0.25rem;"></span>
-            NOW PLAYING
+    <div id="nowPlayingHero" class="now-playing-hero" style="display:none; max-width:720px; margin: 0 auto 1.4rem;">
+      <div class="hero-top-row">
+        <div class="hero-left">
+          <img id="heroArt" class="hero-art" src="" alt="Album Art" />
+          <div class="hero-info">
+            <div class="hero-badge">
+              <span class="jam-live-dot" style="margin-left:0; margin-right:0.25rem;"></span>
+              NOW PLAYING
+            </div>
+            <div class="hero-title" id="heroTitle">Song Title</div>
+            <div class="hero-artist" id="heroArtist">Artist Name</div>
+            <div class="hero-meta">
+              <span class="hero-tag">🔥 320kbps HD</span>
+              <span class="hero-tag eq-tag" id="heroEqTag" onclick="openEqModal()" title="Tap to switch sound profile">🔥 Mega Bass</span>
+            </div>
           </div>
-          <div class="hero-title" id="heroTitle">Song Title</div>
-          <div class="hero-artist" id="heroArtist">Artist Name</div>
-          <div class="hero-meta">
-            <span class="hero-tag">🔥 320kbps HD</span>
-            <span class="hero-tag eq-tag" id="heroEqTag" onclick="openEqModal()" title="Tap to switch sound profile">🔥 Mega Bass</span>
-          </div>
-          <canvas id="heroBeatCanvas" class="hero-beat-canvas" width="130" height="24" title="Live Frequency Analyser"></canvas>
+        </div>
+
+        <div class="hero-vis-wrap">
+          <canvas id="heroBeatCanvas" class="hero-beat-canvas" width="130" height="26" title="Live Frequency Analyser"></canvas>
         </div>
       </div>
-      <div class="hero-right">
+
+      <div class="hero-bottom-row">
         <div class="hero-controls">
           <button class="hero-btn" id="heroShuffleBtn" onclick="toggleShuffle()" title="Shuffle Mode">🔀</button>
           <button class="hero-btn" onclick="playPrevSong()" title="Previous">⏮️</button>
           <button class="hero-btn play" id="heroPlayPauseBtn" onclick="togglePlayPause()" title="Play/Pause">▶</button>
           <button class="hero-btn" onclick="playNextSong()" title="Next">⏭️</button>
           <button class="hero-btn" id="heroRepeatBtn" onclick="toggleRepeat()" title="Repeat Mode">🔁</button>
-          <button class="hero-btn eq" onclick="openEqModal()" title="Sound Equalizer">🎛️ EQ</button>
         </div>
+
         <div class="hero-extra-actions">
           <button class="hero-action-pill magic" onclick="loadMagicMix(currentTrackIndex)" title="Auto-find 10 matching songs">✨ Magic Mix</button>
           <button class="hero-action-pill" onclick="openLyricsModal()" title="Live Lyrics & Karaoke">📜 Lyrics</button>
           <button class="hero-action-pill" onclick="toggleMpcDrawer()" title="16-Pad MPC Beatpad">🥁 Beatpad</button>
+          <button class="hero-action-pill" onclick="openEqModal()" title="Sound Equalizer">🎛️ EQ</button>
         </div>
       </div>
     </div>
@@ -2345,14 +2508,22 @@
         <span class="radio-live-dot"></span> LIVE 24/7 NON-STOP STATIONS
       </div>
       <h2 style="font-size:1.6rem; font-weight:800; margin-bottom:0.4rem; color:#fff;">Endless Vibe Radio</h2>
-      <p style="color:#94a3af; font-size:0.86rem; max-width:540px; margin:0 auto 0.6rem;">
-        Pick your vibe and let it stream continuously with zero silence, DJ crossfade & full 320kbps Akamai audio.
+      <p style="color:#94a3af; font-size:0.86rem; max-width:560px; margin:0 auto 1.1rem;">
+        Pick your vibe or create your own custom endless radio station! Streams non-stop with zero silence & DJ crossfade.
       </p>
+      <div style="display:flex; justify-content:center; gap:0.6rem; flex-wrap:wrap;">
+        <button class="btn-create-custom-station" onclick="openCreateStationModal()">
+          ➕ Create Custom Radio Station
+        </button>
+        <button class="btn-reset-stations" onclick="resetRadioStations()">
+          🔄 Reset Default Stations
+        </button>
+      </div>
     </div>
 
     <!-- Stations Grid -->
     <div class="radio-grid" id="radioStationsGrid">
-      <!-- 5 Curated Stations Rendered Dynamically -->
+      <!-- 5 Curated Stations + Custom Stations Rendered Dynamically -->
     </div>
   </div>
 
@@ -2663,21 +2834,150 @@
     </div>
   </div>
 
-  <!-- ==================== 16-PAD MPC DRUM MACHINE & LIVE BEATPAD ==================== -->
-  <div class="mpc-drawer" id="mpcDrawer">
-    <div class="mpc-header">
-      <div style="display:flex; align-items:center; gap:0.45rem;">
-        <span style="font-size:1.15rem;">🥁</span>
-        <span style="font-weight:800; font-size:0.95rem; color:#fff;">Live MPC Beatpad</span>
+  <!-- ==================== 16-PAD MPC DRUM MACHINE & LIVE BEATPAD MODAL ==================== -->
+  <div class="modal-overlay" id="mpcDrawer">
+    <div class="modal-box mpc-modal-box">
+      <div class="mpc-header">
+        <div style="display:flex; align-items:center; gap:0.55rem;">
+          <span style="font-size:1.2rem;">🥁</span>
+          <div>
+            <div style="font-weight:800; font-size:1rem; color:#fff;">Live MPC Beatpad</div>
+            <div style="font-size:0.7rem; color:#10b981; font-weight:700;">⚡ 0ms Web Audio • Tap over playing songs</div>
+          </div>
+        </div>
+        <button class="btn-close-modal" onclick="toggleMpcDrawer()">✕</button>
       </div>
-      <button class="btn-close-modal" onclick="toggleMpcDrawer()">✕</button>
+      <div style="font-size:0.75rem; color:#94a3af; margin-bottom:0.75rem;">
+        Tap pads with touch or keyboard keys: <strong>1-4</strong>, <strong>Q-R</strong>, <strong>A-F</strong>, <strong>Z-V</strong>
+      </div>
+      <div class="mpc-grid" id="mpcGrid">
+        <!-- 16 Pads synthesized via Web Audio -->
+      </div>
+      <div class="modal-actions" style="margin-top:1.1rem;">
+        <button class="btn-jam-primary" style="width:100%;" onclick="toggleMpcDrawer()">Close Beatpad ✓</button>
+      </div>
     </div>
-    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:#94a3af; margin-bottom:0.6rem;">
-      <span>Tap pads or keyboard keys:</span>
-      <span style="color:#10b981; font-weight:700;">⚡ 0ms Web Audio</span>
+  </div>
+
+  <!-- ==================== MODAL: CREATE CUSTOM RADIO STATION ==================== -->
+  <div class="modal-overlay" id="createStationModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>📻 Create Custom Radio Station</span>
+        <button class="btn-close-modal" onclick="closeCreateStationModal()">✕</button>
+      </div>
+
+      <p style="color:#94a3af; font-size:0.82rem; line-height:1.4; margin-bottom:1rem;">
+        Create your own continuous live radio! Enter any singer, movie, or genre to stream non-stop.
+      </p>
+
+      <div style="margin-bottom:0.8rem;">
+        <label style="display:block; font-size:0.78rem; font-weight:700; color:#c4b5fd; margin-bottom:0.3rem;">Station Name:</label>
+        <input type="text" class="modal-input" id="customStationNameInput" placeholder="e.g. Sid Sriram Melodies, Anirudh Mass Club" />
+      </div>
+
+      <div style="margin-bottom:0.8rem;">
+        <label style="display:block; font-size:0.78rem; font-weight:700; color:#c4b5fd; margin-bottom:0.3rem;">Music Search Query / Artist / Vibe:</label>
+        <input type="text" class="modal-input" id="customStationQueryInput" placeholder="e.g. Sid Sriram telugu melody hits" />
+      </div>
+
+      <div style="margin-bottom:0.8rem;">
+        <label style="display:block; font-size:0.78rem; font-weight:700; color:#c4b5fd; margin-bottom:0.3rem;">Station Tag / Subtitle:</label>
+        <input type="text" class="modal-input" id="customStationTagInput" placeholder="e.g. MELODY • SOUL • 120 BPM" />
+      </div>
+
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; font-size:0.78rem; font-weight:700; color:#c4b5fd; margin-bottom:0.35rem;">Choose Station Icon:</label>
+        <div class="emoji-selector" id="stationEmojiSelector">
+          <span class="emoji-opt active" onclick="selectStationEmoji(this, '🎧')">🎧</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '🔥')">🔥</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '🌙')">🌙</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '⚡')">⚡</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '🪔')">🪔</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '🎶')">🎶</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '🎸')">🎸</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '🥁')">🥁</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '💃')">💃</span>
+          <span class="emoji-opt" onclick="selectStationEmoji(this, '🚗')">🚗</span>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="display:flex; gap:0.6rem;">
+        <button class="btn-modal-cancel" style="flex:1;" onclick="closeCreateStationModal()">Cancel</button>
+        <button class="btn-jam-primary" style="flex:1.5;" onclick="saveCustomRadioStation()">Create Station 🚀</button>
+      </div>
     </div>
-    <div class="mpc-grid" id="mpcGrid">
-      <!-- 16 Pads synthesized via Web Audio -->
+  </div>
+
+  <!-- ==================== MODAL: SETTINGS & AUDIO RESET ==================== -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>⚙️ Settings & Audio Preferences</span>
+        <button class="btn-close-modal" onclick="closeSettingsModal()">✕</button>
+      </div>
+
+      <div class="settings-group">
+        <h4 style="font-size:0.86rem; color:#c4b5fd; margin-bottom:0.6rem;">🎛️ Audio & Sound Engine</h4>
+        <div class="settings-row">
+          <div>
+            <div style="font-weight:700; font-size:0.84rem; color:#fff;">Reset Audio FX & Equalizer</div>
+            <div style="font-size:0.75rem; color:#94a3af;">Restores sound profile to flat balanced, turns off 8D orbit & sets volume to 100%</div>
+          </div>
+          <button class="btn-setting-action" onclick="resetAudioSettings()">Reset Audio 🔄</button>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div style="font-weight:700; font-size:0.84rem; color:#fff;">Default Streaming Quality</div>
+            <div style="font-size:0.75rem; color:#94a3af;">Preferred download & streaming bitrate</div>
+          </div>
+          <select class="settings-select" id="prefQualitySelect" onchange="setDefaultQuality(this.value)">
+            <option value="320">320kbps HD (Best)</option>
+            <option value="160">160kbps (Balanced)</option>
+            <option value="96">96kbps (Data Saver)</option>
+          </select>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div style="font-weight:700; font-size:0.84rem; color:#fff;">Seamless DJ Crossfade (5s)</div>
+            <div style="font-size:0.75rem; color:#94a3af;">Zero silence between tracks</div>
+          </div>
+          <input type="checkbox" id="settingsCrossfadeToggle" checked onchange="toggleDjCrossfade(this.checked)" style="transform:scale(1.25); cursor:pointer;" />
+        </div>
+      </div>
+
+      <div class="settings-group" style="margin-top:1rem;">
+        <h4 style="font-size:0.86rem; color:#c4b5fd; margin-bottom:0.6rem;">🧹 Data & Cache Management</h4>
+        <div class="settings-row">
+          <div>
+            <div style="font-weight:700; font-size:0.84rem; color:#fff;">Clear Recently Played</div>
+            <div style="font-size:0.75rem; color:#94a3af;">Removes song history from carousel</div>
+          </div>
+          <button class="btn-setting-action" onclick="clearRecentlyPlayedHistory()">Clear History 🧹</button>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div style="font-weight:700; font-size:0.84rem; color:#fff;">Reset Radio Stations</div>
+            <div style="font-size:0.75rem; color:#94a3af;">Removes custom stations & restores defaults</div>
+          </div>
+          <button class="btn-setting-action" onclick="resetRadioStations()">Reset Radio 📻</button>
+        </div>
+
+        <div class="settings-row danger">
+          <div>
+            <div style="font-weight:700; font-size:0.84rem; color:#ef4444;">Factory Reset All Data</div>
+            <div style="font-size:0.75rem; color:#94a3af;">Wipes custom playlists, cached data & resets to brand new state</div>
+          </div>
+          <button class="btn-setting-danger" onclick="factoryResetApp()">Factory Reset ⚠️</button>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:1.2rem;">
+        <button class="btn-jam-primary" style="width:100%;" onclick="closeSettingsModal()">Done ✓</button>
+      </div>
     </div>
   </div>
 
@@ -2782,16 +3082,36 @@
       searchSongs(term);
     }
 
-    function switchView(view) {
+    function switchView(view, updateHash = true) {
       ['search', 'playlists', 'radio'].forEach(v => {
         const tabEl = document.getElementById('tab' + v.charAt(0).toUpperCase() + v.slice(1));
         const viewEl = document.getElementById(v + 'View');
         if (tabEl) tabEl.classList.toggle('active', v === view);
         if (viewEl) viewEl.style.display = (v === view) ? 'block' : 'none';
       });
+      if (updateHash && window.location.hash !== '#' + view) {
+        history.pushState(null, '', '#' + view);
+      }
       if (view === 'playlists') renderPlaylistsView();
       if (view === 'radio') renderRadioStations();
     }
+
+    // Clean URL Hash Routing
+    function handleHashRouting() {
+      const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+      if (hash === 'radio') {
+        switchView('radio', false);
+      } else if (hash === 'playlists') {
+        switchView('playlists', false);
+      } else if (hash === 'settings') {
+        openSettingsModal();
+      } else if (hash === 'jam') {
+        openJamModal();
+      } else if (hash === 'search') {
+        switchView('search', false);
+      }
+    }
+    window.addEventListener('hashchange', handleHashRouting);
 
     // ==================== AUTOCOMPLETE ====================
     let suggestTimeout = null;
@@ -3463,12 +3783,98 @@
     let activeRadioStationId = null;
     let isRadioModeActive = false;
 
+    function getCustomRadioStations() {
+      try {
+        return JSON.parse(localStorage.getItem('custom_radio_stations') || '[]');
+      } catch(e) {
+        return [];
+      }
+    }
+
+    function saveCustomRadioStationsList(list) {
+      localStorage.setItem('custom_radio_stations', JSON.stringify(list));
+    }
+
+    function getAllRadioStations() {
+      return [...getCustomRadioStations(), ...RADIO_STATIONS];
+    }
+
+    let selectedStationEmoji = '🎧';
+    function selectStationEmoji(el, emoji) {
+      selectedStationEmoji = emoji;
+      document.querySelectorAll('#stationEmojiSelector .emoji-opt').forEach(opt => opt.classList.remove('active'));
+      if (el) el.classList.add('active');
+    }
+
+    function openCreateStationModal() {
+      document.getElementById('createStationModal').style.display = 'flex';
+      const input = document.getElementById('customStationNameInput');
+      if (input) input.focus();
+    }
+
+    function closeCreateStationModal() {
+      document.getElementById('createStationModal').style.display = 'none';
+    }
+
+    function saveCustomRadioStation() {
+      const name = (document.getElementById('customStationNameInput').value || '').trim();
+      const query = (document.getElementById('customStationQueryInput').value || '').trim();
+      const tag = (document.getElementById('customStationTagInput').value || '').trim();
+
+      if (!name || !query) {
+        showToast('Please enter both station name and music query', '⚠️');
+        return;
+      }
+
+      const newStation = {
+        id: 'custom_' + Date.now(),
+        name: `${selectedStationEmoji} ${name}`,
+        tag: tag || 'CUSTOM VIBE',
+        desc: `Non-stop live stream for "${query}"`,
+        listeners: `${(Math.floor(Math.random() * 8) + 8).toFixed(1)}k tuned in`,
+        query: query,
+        isCustom: true
+      };
+
+      const list = getCustomRadioStations();
+      list.unshift(newStation);
+      saveCustomRadioStationsList(list);
+
+      document.getElementById('customStationNameInput').value = '';
+      document.getElementById('customStationQueryInput').value = '';
+      document.getElementById('customStationTagInput').value = '';
+
+      closeCreateStationModal();
+      renderRadioStations();
+      showToast(`Created Custom Station: "${newStation.name}"! 📻`, '🎉');
+      tuneIntoStation(newStation.id);
+    }
+
+    function deleteCustomStation(id, event) {
+      if (event) event.stopPropagation();
+      if (!confirm('Are you sure you want to delete this custom radio station?')) return;
+      let list = getCustomRadioStations();
+      list = list.filter(s => s.id !== id);
+      saveCustomRadioStationsList(list);
+      renderRadioStations();
+      showToast('Custom station deleted', '🗑️');
+    }
+
+    function resetRadioStations() {
+      if (!confirm('Reset all radio stations to defaults?')) return;
+      localStorage.removeItem('custom_radio_stations');
+      renderRadioStations();
+      showToast('Radio stations reset to defaults! 📻', '🔄');
+    }
+
     function renderRadioStations() {
       const container = document.getElementById('radioStationsGrid');
       if (!container) return;
 
-      container.innerHTML = RADIO_STATIONS.map(st => {
+      const allStations = getAllRadioStations();
+      container.innerHTML = allStations.map(st => {
         const isCurrent = activeRadioStationId === st.id && !globalAudio.paused;
+        const isCustom = st.isCustom === true;
         return `
           <div class="radio-card ${isCurrent ? 'now-playing-station' : ''}" id="radioCard_${st.id}">
             <div>
@@ -3476,11 +3882,15 @@
                 <span class="radio-live-tag">
                   <span class="radio-live-dot"></span> LIVE ON AIR
                 </span>
-                <span class="radio-listeners">👥 ${st.listeners}</span>
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  ${isCustom ? `<span class="custom-station-badge">✨ My Station</span>` : ''}
+                  <span class="radio-listeners">👥 ${st.listeners || '12k+'}</span>
+                  ${isCustom ? `<button class="btn-del-station" onclick="deleteCustomStation('${st.id}', event)" title="Delete station">🗑️</button>` : ''}
+                </div>
               </div>
-              <div class="radio-station-name">${st.name}</div>
-              <div style="font-size:0.72rem; font-weight:800; color:#38bdf8; margin-bottom:0.4rem;">${st.tag}</div>
-              <div class="radio-station-desc">${st.desc}</div>
+              <div class="radio-station-name">${escapeHtml(st.name)}</div>
+              <div style="font-size:0.72rem; font-weight:800; color:#38bdf8; margin-bottom:0.4rem;">${escapeHtml(st.tag || 'CUSTOM')}</div>
+              <div class="radio-station-desc">${escapeHtml(st.desc || 'Endless continuous custom radio station stream')}</div>
             </div>
             <button class="radio-btn-tune ${isCurrent ? 'active-tuned' : ''}" onclick="tuneIntoStation('${st.id}')">
               ${isCurrent ? '🟢 Currently On Air (Playing)' : '▶ Tune In Live'}
@@ -3491,7 +3901,8 @@
     }
 
     async function tuneIntoStation(stationId) {
-      const station = RADIO_STATIONS.find(s => s.id === stationId);
+      const allStations = getAllRadioStations();
+      const station = allStations.find(s => s.id === stationId);
       if (!station) return;
       activeRadioStationId = stationId;
       isRadioModeActive = true;
@@ -3519,6 +3930,95 @@
         }
       } catch(e) {
         console.warn('Radio stream connect error:', e);
+      }
+    }
+
+    // ==================== SETTINGS & AUDIO RESET ====================
+    function openSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      if (modal) modal.style.display = 'flex';
+      const qualSelect = document.getElementById('prefQualitySelect');
+      if (qualSelect) qualSelect.value = localStorage.getItem('user_default_quality') || '320';
+      const crossToggle = document.getElementById('settingsCrossfadeToggle');
+      if (crossToggle) crossToggle.checked = isDjCrossfadeOn;
+    }
+
+    function closeSettingsModal() {
+      const modal = document.getElementById('settingsModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function resetAudioSettings() {
+      initWebAudio();
+      applyEqPreset('flat');
+      setSpatialMode('off');
+      setPlayerVolume(1.0);
+      if (isSuperBoosted) toggleSuperBoost();
+      toggleDjCrossfade(true);
+      showToast('Audio Equalizer & Sound FX reset to factory defaults! 🎛️', '🔄');
+    }
+
+    function clearRecentlyPlayedHistory() {
+      localStorage.removeItem('recently_played');
+      renderRecentlyPlayed();
+      showToast('Recently played history cleared! 🧹', '🧹');
+    }
+
+    function setDefaultQuality(val) {
+      localStorage.setItem('user_default_quality', val);
+      showToast(`Default quality set to ${val}kbps`, '⚙️');
+    }
+
+    function factoryResetApp() {
+      if (!confirm('⚠️ WARNING: This will reset all your playlists, saved songs, history, custom radio stations, and equalizer settings.\n\nDo you want to proceed?')) return;
+      localStorage.clear();
+      showToast('Factory reset complete! Refreshing app...', '🚀');
+      setTimeout(() => {
+        window.location.reload();
+      }, 900);
+    }
+
+    // ==================== FREE CLIENT-SIDE AI AUDIO ENGINE ====================
+    function analyzeSongAiVibe(song) {
+      if (!song) return;
+      const titleLower = (song.title || '').toLowerCase();
+      const artistLower = (song.artist || '').toLowerCase();
+
+      let detectedMood = 'High Energy';
+      let estimatedBpm = 126;
+      let emoji = '🔥';
+
+      if (titleLower.includes('lofi') || titleLower.includes('chill') || titleLower.includes('slow') || titleLower.includes('acoustic')) {
+        detectedMood = 'Late Night Chill';
+        estimatedBpm = 86;
+        emoji = '🌙';
+      } else if (titleLower.includes('devotional') || titleLower.includes('bhakti') || titleLower.includes('stotram') || titleLower.includes('suprabhatam')) {
+        detectedMood = 'Spiritual Peace';
+        estimatedBpm = 74;
+        emoji = '🪔';
+      } else if (titleLower.includes('mass') || titleLower.includes('dj') || titleLower.includes('remix') || titleLower.includes('dance') || artistLower.includes('anirudh') || artistLower.includes('thaman')) {
+        detectedMood = 'Mass Club Drop';
+        estimatedBpm = 132;
+        emoji = '⚡';
+      } else if (titleLower.includes('melody') || titleLower.includes('romantic') || titleLower.includes('love') || artistLower.includes('sid sriram')) {
+        detectedMood = 'Soulful Melody';
+        estimatedBpm = 94;
+        emoji = '❤️';
+      } else {
+        const hash = (song.title || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+        estimatedBpm = 104 + (hash % 32);
+        if (estimatedBpm > 120) {
+          detectedMood = 'Upbeat Rhythm';
+          emoji = '🔥';
+        } else {
+          detectedMood = 'Smooth Groove';
+          emoji = '🎧';
+        }
+      }
+
+      const heroTag = document.getElementById('heroEqTag');
+      if (heroTag) {
+        heroTag.title = `AI Analysis: ${detectedMood} • ${estimatedBpm} BPM (Tap to open EQ)`;
       }
     }
 
@@ -4059,6 +4559,9 @@
       if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume().catch(() => {});
       }
+
+      // Client-Side AI Mood & BPM Analysis
+      analyzeSongAiVibe(song);
 
       const art = song.artwork || song.imageHigh || song.imageMed || '';
       const audioUrl = song.audioUrl || song.url320 || song.audioUrl160 || song.url160 || song.url96 || '';
@@ -4906,6 +5409,11 @@
         const input = document.getElementById('jamJoinCodeInput');
         if (input) input.value = room.toUpperCase();
         showToast(`Invited to ${room}! Click Join to listen together 🎧`, '👋');
+      }
+
+      // 7. Initialize URL Hash Routing (#radio, #playlists, #settings, #search)
+      if (window.location.hash) {
+        handleHashRouting();
       }
     });
 
