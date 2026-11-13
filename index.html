@@ -48,6 +48,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
+  <!-- WebRTC for Synchronized Listen Together -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
   <style>
     :root {
       --bg: #090d16;
@@ -1125,6 +1128,326 @@
       cursor: pointer;
     }
 
+    /* Jam / Listen Together */
+    .view-tab.jam-tab {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(6, 182, 212, 0.15));
+      border-color: rgba(139, 92, 246, 0.35);
+      position: relative;
+    }
+    .view-tab.jam-tab:hover {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.28), rgba(6, 182, 212, 0.22));
+    }
+    .view-tab.jam-tab.in-room {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+    }
+    .jam-live-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 1.5s infinite;
+      margin-left: 0.3rem;
+      vertical-align: middle;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.8; }
+    }
+
+    .jam-modal-box {
+      max-width: 440px;
+    }
+    .btn-close-modal {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .btn-close-modal:hover { color: #fff; }
+
+    .jam-nickname-row {
+      margin-bottom: 1rem;
+    }
+
+    .jam-action-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+    .jam-action-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1rem;
+    }
+    .jam-action-card h4 {
+      font-size: 0.95rem;
+      color: #fff;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .jam-action-card p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    .btn-jam-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      padding: 0.65rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+    .btn-jam-primary:hover {
+      box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-jam-accent {
+      background: linear-gradient(135deg, var(--accent), #0891b2);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .btn-jam-accent:hover {
+      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+      transform: translateY(-1px);
+    }
+    .btn-jam-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      font-weight: 700;
+      padding: 0.65rem 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: all 0.2s;
+    }
+    .btn-jam-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    .jam-active-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.65rem 0.9rem;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+    }
+    .jam-peers-count {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.2rem 0.55rem;
+      border-radius: 9999px;
+      font-size: 0.76rem;
+      color: #fff;
+    }
+    .jam-code-display-box {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 14px;
+      padding: 1.1rem;
+      margin-bottom: 0.8rem;
+    }
+    .jam-big-code {
+      font-size: 1.8rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      margin: 0.3rem 0 0.8rem;
+      font-family: monospace;
+    }
+    .btn-copy-code {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn-copy-code:hover { background: rgba(255, 255, 255, 0.15); }
+    .btn-whatsapp-share {
+      width: 100%;
+      background: #25d366;
+      color: #fff;
+      border: none;
+      padding: 0.7rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-whatsapp-share:hover {
+      background: #20bd5a;
+      transform: translateY(-1px);
+    }
+
+    /* Floating Live Chat Drawer */
+    .jam-chat-drawer {
+      position: fixed;
+      bottom: 84px;
+      right: 14px;
+      width: 320px;
+      max-width: calc(100vw - 28px);
+      background: rgba(17, 24, 39, 0.96);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 9990;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .jam-chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 0.9rem;
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      user-select: none;
+    }
+    .jam-chat-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .jam-chat-badge {
+      background: #ef4444;
+      color: #fff;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.4rem;
+      font-weight: 800;
+    }
+    .jam-chat-toggle-btn {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .jam-chat-body {
+      display: flex;
+      flex-direction: column;
+      height: 280px;
+      padding: 0.65rem;
+    }
+    .jam-chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding-right: 0.3rem;
+      margin-bottom: 0.5rem;
+    }
+    .chat-bubble {
+      max-width: 82%;
+      padding: 0.45rem 0.7rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+    .chat-bubble.mine {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: #fff;
+      border-bottom-right-radius: 2px;
+    }
+    .chat-bubble.theirs {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-bottom-left-radius: 2px;
+    }
+    .chat-sender-name {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.15rem;
+    }
+    .chat-system-msg {
+      align-self: center;
+      font-size: 0.72rem;
+      color: #94a3af;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 0.3rem 0.6rem;
+      text-align: center;
+      margin: 0.3rem 0;
+    }
+    .jam-chat-quick-reactions {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 0.45rem;
+      justify-content: center;
+    }
+    .reaction-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.2rem 0.45rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .reaction-btn:hover { transform: scale(1.2); }
+    .jam-chat-input-row {
+      display: flex;
+      gap: 0.4rem;
+    }
+    .jam-chat-input-row input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 0.45rem 0.65rem;
+      color: #fff;
+      font-size: 0.82rem;
+      outline: none;
+    }
+    .jam-chat-send-btn {
+      background: var(--accent);
+      border: none;
+      color: #090d16;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 0.45rem 0.8rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
     @media (max-width: 600px) {
       h1 { font-size: 1.7rem; }
       .search-box { padding: 0.3rem 0.35rem 0.3rem 1rem; }
@@ -1156,13 +1479,16 @@
     <p class="subtitle">Search, stream, create offline playlists & download full 320kbps tracks</p>
   </header>
 
-  <!-- View Switcher (Search vs My Playlists) -->
+  <!-- View Switcher (Search vs My Playlists vs Listen Together) -->
   <div class="view-switcher">
     <button class="view-tab active" id="tabSearch" onclick="switchView('search')">
       🔍 Search Music
     </button>
     <button class="view-tab" id="tabPlaylists" onclick="switchView('playlists')">
       📁 My Playlists <span class="tab-badge" id="totalSavedBadge">0</span>
+    </button>
+    <button class="view-tab jam-tab" id="tabJam" onclick="openJamModal()">
+      🎧 Listen Together <span class="jam-live-dot" id="jamStatusDot" style="display:none;"></span>
     </button>
   </div>
 
@@ -1314,6 +1640,115 @@
       <div class="modal-actions" style="margin-top:1rem;">
         <button class="btn-modal-cancel" onclick="closeModal()">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: LISTEN TOGETHER (JAM ROOM) ==================== -->
+  <div class="modal-overlay" id="jamModal">
+    <div class="modal-box jam-modal-box">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>🎧 Listen Together (Jam Room)</span>
+        <button class="btn-close-modal" onclick="closeJamModal()">✕</button>
+      </div>
+
+      <!-- State 1: Not connected -->
+      <div id="jamNotConnectedView">
+        <p style="color:#94a3af; font-size:0.86rem; margin-bottom:1.1rem; line-height:1.4;">
+          Listen to songs with friends in perfect real-time sync with live in-app chat!
+        </p>
+
+        <div class="jam-nickname-row">
+          <label style="font-size:0.8rem; color:#c4b5fd; font-weight:700; display:block; margin-bottom:0.35rem;">Your Name / Nickname:</label>
+          <input type="text" class="modal-input" id="jamNicknameInput" placeholder="Enter your name (e.g. Teja)" value="Music Fan" />
+        </div>
+
+        <div class="jam-action-cards">
+          <!-- Card A: Host a Party -->
+          <div class="jam-action-card">
+            <h4>👑 Host a Party</h4>
+            <p>Create a room and invite your friend with a 1-tap link.</p>
+            <button class="btn-jam-primary" onclick="createJamRoom()">
+              Create Room 🚀
+            </button>
+          </div>
+
+          <!-- Card B: Join Room -->
+          <div class="jam-action-card">
+            <h4>👋 Join a Friend's Party</h4>
+            <p>Enter your friend's room code to listen in sync.</p>
+            <div style="display:flex; gap:0.5rem;">
+              <input type="text" class="modal-input" id="jamJoinCodeInput" placeholder="Code (e.g. 4821)" maxlength="10" style="text-transform:uppercase; margin-bottom:0;" />
+              <button class="btn-jam-accent" onclick="joinJamRoom()">
+                Join 🎧
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- State 2: Active Connected Room -->
+      <div id="jamConnectedView" style="display:none;">
+        <div class="jam-active-banner">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="jam-live-dot" style="margin-left:0;"></span>
+            <span style="font-weight:700; color:#10b981;">Party Room Active</span>
+          </div>
+          <span class="jam-peers-count" id="jamPeersCount">👥 1 Listener</span>
+        </div>
+
+        <div class="jam-code-display-box">
+          <div style="font-size:0.75rem; color:#94a3af; text-transform:uppercase; letter-spacing:0.05em;">Room Code</div>
+          <div class="jam-big-code" id="jamRoomCodeDisplay">JAM-0000</div>
+          <button class="btn-copy-code" onclick="copyJamInviteLink()">📋 Copy Invite Link</button>
+        </div>
+
+        <div style="margin:1rem 0;">
+          <button class="btn-whatsapp-share" onclick="shareJamWhatsApp()">
+            📲 Invite Friends on WhatsApp
+          </button>
+        </div>
+
+        <div style="display:flex; gap:0.6rem; margin-top:1.2rem;">
+          <button class="btn-jam-accent" style="flex:1;" onclick="openJamChatDrawer(); closeJamModal();">
+            💬 Open Live Chat
+          </button>
+          <button class="btn-jam-danger" onclick="leaveJamRoom()">
+            🚪 Leave Room
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top:1.2rem;">
+        <button class="btn-modal-cancel" onclick="closeJamModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FLOATING LIVE CHAT DRAWER ==================== -->
+  <div id="jamChatDrawer" class="jam-chat-drawer" style="display:none;">
+    <div class="jam-chat-header" onclick="toggleJamChat()">
+      <div class="jam-chat-title">
+        <span class="jam-live-dot" style="margin-left:0;"></span>
+        <span>💬 Party Chat</span>
+        <span class="jam-chat-badge" id="jamChatBadge" style="display:none;">0</span>
+      </div>
+      <div class="jam-chat-toggle-btn" id="jamChatToggleIcon">▲</div>
+    </div>
+    <div class="jam-chat-body" id="jamChatBody" style="display:none;">
+      <div class="jam-chat-messages" id="jamChatMessages">
+        <div class="chat-system-msg">🎵 Room connected! Play, pause, seek, or song changes sync live on both phones.</div>
+      </div>
+      <div class="jam-chat-quick-reactions">
+        <button type="button" class="reaction-btn" onclick="sendQuickReaction('🔥')">🔥</button>
+        <button type="button" class="reaction-btn" onclick="sendQuickReaction('❤️')">❤️</button>
+        <button type="button" class="reaction-btn" onclick="sendQuickReaction('🕺')">🕺</button>
+        <button type="button" class="reaction-btn" onclick="sendQuickReaction('👏')">👏</button>
+        <button type="button" class="reaction-btn" onclick="sendQuickReaction('🎶')">🎶</button>
+      </div>
+      <form class="jam-chat-input-row" onsubmit="sendChatMessage(event)">
+        <input type="text" id="jamChatInput" placeholder="Chat with friend..." autocomplete="off" />
+        <button type="submit" class="jam-chat-send-btn">Send</button>
+      </form>
     </div>
   </div>
 
@@ -1777,6 +2212,10 @@
       }
 
       showToast(`Playing: ${song.title}`, '▶️');
+
+      if (!isRemoteSync && jamConnections.length > 0) {
+        broadcastJamData({ type: 'CHANGE_SONG', song: song, sender: jamNickname });
+      }
     }
 
     // Auto-fallback if audio error occurs
@@ -1794,10 +2233,16 @@
         globalAudio.play();
         btnPlayPause.textContent = '⏸';
         audioVisualizer.classList.add('playing');
+        if (!isRemoteSync && jamConnections.length > 0) {
+          broadcastJamData({ type: 'PLAY', currentTime: globalAudio.currentTime, sender: jamNickname });
+        }
       } else {
         globalAudio.pause();
         btnPlayPause.textContent = '▶';
         audioVisualizer.classList.remove('playing');
+        if (!isRemoteSync && jamConnections.length > 0) {
+          broadcastJamData({ type: 'PAUSE', currentTime: globalAudio.currentTime, sender: jamNickname });
+        }
       }
     }
 
@@ -1830,6 +2275,9 @@
     function onSeekInput(percent) {
       if (globalAudio.duration) {
         globalAudio.currentTime = (percent / 100) * globalAudio.duration;
+        if (!isRemoteSync && jamConnections.length > 0) {
+          broadcastJamData({ type: 'SEEK', currentTime: globalAudio.currentTime, sender: jamNickname });
+        }
       }
     }
 
@@ -2091,6 +2539,333 @@
     function closeModal() {
       document.getElementById('addToPlaylistModal').style.display = 'none';
     }
+
+    // ==================== LISTEN TOGETHER (JAM ROOM) & LIVE CHAT ====================
+    let peer = null;
+    let jamConnections = [];
+    let isJamHost = false;
+    let currentJamRoomCode = null;
+    let jamNickname = 'Music Fan';
+    let isRemoteSync = false;
+    let unreadChatCount = 0;
+
+    function broadcastJamData(data) {
+      jamConnections.forEach(conn => {
+        if (conn && conn.open) {
+          try { conn.send(data); } catch(e) {}
+        }
+      });
+    }
+
+    function handleJamData(data) {
+      if (!data || !data.type) return;
+
+      if (data.type === 'CHANGE_SONG') {
+        isRemoteSync = true;
+        showToast(`${data.sender || 'Friend'} changed track!`, '🎵');
+        currentQueue = [data.song];
+        playSongAt(0);
+        setTimeout(() => { isRemoteSync = false; }, 400);
+      } else if (data.type === 'PLAY') {
+        isRemoteSync = true;
+        if (Math.abs(globalAudio.currentTime - data.currentTime) > 1.5) {
+          globalAudio.currentTime = data.currentTime;
+        }
+        globalAudio.play().catch(() => {});
+        btnPlayPause.textContent = '⏸';
+        audioVisualizer.classList.add('playing');
+        showToast(`${data.sender || 'Friend'} resumed playing ▶`, '🎧');
+        setTimeout(() => { isRemoteSync = false; }, 400);
+      } else if (data.type === 'PAUSE') {
+        isRemoteSync = true;
+        globalAudio.pause();
+        if (Math.abs(globalAudio.currentTime - data.currentTime) > 1.5) {
+          globalAudio.currentTime = data.currentTime;
+        }
+        btnPlayPause.textContent = '▶';
+        audioVisualizer.classList.remove('playing');
+        showToast(`${data.sender || 'Friend'} paused ⏸`, '⏸️');
+        setTimeout(() => { isRemoteSync = false; }, 400);
+      } else if (data.type === 'SEEK') {
+        isRemoteSync = true;
+        globalAudio.currentTime = data.currentTime;
+        showToast(`${data.sender || 'Friend'} jumped to ${formatTime(data.currentTime)}`, '⏩');
+        setTimeout(() => { isRemoteSync = false; }, 400);
+      } else if (data.type === 'SYNC_STATE') {
+        if (data.song) {
+          isRemoteSync = true;
+          currentQueue = [data.song];
+          playSongAt(0);
+          globalAudio.currentTime = data.currentTime || 0;
+          if (data.isPlaying) {
+            globalAudio.play().catch(() => {});
+          } else {
+            globalAudio.pause();
+          }
+          setTimeout(() => { isRemoteSync = false; }, 400);
+        }
+      } else if (data.type === 'CHAT') {
+        appendChatMessage(data.sender, data.text, false);
+      }
+    }
+
+    function createJamRoom() {
+      const nameInput = document.getElementById('jamNicknameInput').value.trim();
+      if (nameInput) jamNickname = nameInput;
+
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      const roomCode = `JAM-${randomNum}`;
+      const peerId = `mmd-${roomCode.toLowerCase()}`;
+
+      showToast('Creating Jam Room...', '⏳');
+
+      if (peer) {
+        try { peer.destroy(); } catch (e) {}
+      }
+
+      peer = new Peer(peerId);
+
+      peer.on('open', () => {
+        isJamHost = true;
+        currentJamRoomCode = roomCode;
+        updateJamRoomUI(true, roomCode);
+        showToast(`Room created: ${roomCode}! 🚀`, '🎉');
+      });
+
+      peer.on('connection', (conn) => {
+        setupConnection(conn);
+        showToast('Friend joined the room! 👥', '👋');
+        addSystemChatMessage(`${conn.metadata?.name || 'A friend'} joined the party!`);
+        
+        setTimeout(() => {
+          if (currentTrackIndex >= 0 && currentQueue[currentTrackIndex]) {
+            conn.send({
+              type: 'SYNC_STATE',
+              song: currentQueue[currentTrackIndex],
+              currentTime: globalAudio.currentTime,
+              isPlaying: !globalAudio.paused
+            });
+          }
+        }, 500);
+      });
+
+      peer.on('error', (err) => {
+        console.error('Peer error:', err);
+        showToast('Connection error. Trying again...', '⚠️');
+      });
+    }
+
+    function joinJamRoom(codeArg) {
+      const nameInput = document.getElementById('jamNicknameInput').value.trim();
+      if (nameInput) jamNickname = nameInput;
+
+      let code = codeArg || document.getElementById('jamJoinCodeInput').value.trim().toUpperCase();
+      if (!code) {
+        showToast('Please enter a room code', '⚠️');
+        return;
+      }
+      if (!code.startsWith('JAM-')) {
+        code = `JAM-${code.replace(/[^0-9A-Z]/g, '')}`;
+      }
+
+      const peerId = `mmd-${code.toLowerCase()}`;
+      showToast(`Connecting to ${code}...`, '⏳');
+
+      if (peer) {
+        try { peer.destroy(); } catch (e) {}
+      }
+
+      peer = new Peer();
+
+      peer.on('open', () => {
+        const conn = peer.connect(peerId, { metadata: { name: jamNickname } });
+        setupConnection(conn);
+
+        conn.on('open', () => {
+          isJamHost = false;
+          currentJamRoomCode = code;
+          updateJamRoomUI(true, code);
+          showToast(`Connected to ${code}! 🎧`, '🎉');
+          addSystemChatMessage(`Connected to ${code}! You are now listening together.`);
+        });
+      });
+
+      peer.on('error', (err) => {
+        console.error(err);
+        showToast('Could not find room. Check code & try again.', '❌');
+      });
+    }
+
+    function setupConnection(conn) {
+      jamConnections.push(conn);
+      updatePeersBadge();
+
+      conn.on('data', (data) => {
+        handleJamData(data);
+        if (isJamHost && data.type !== 'SYNC_STATE') {
+          jamConnections.forEach(c => {
+            if (c !== conn && c.open) {
+              try { c.send(data); } catch(e) {}
+            }
+          });
+        }
+      });
+
+      conn.on('close', () => {
+        jamConnections = jamConnections.filter(c => c !== conn);
+        updatePeersBadge();
+        showToast('A listener disconnected', 'ℹ️');
+        addSystemChatMessage('A listener left the room.');
+      });
+    }
+
+    function updatePeersBadge() {
+      const count = jamConnections.length + 1;
+      const el = document.getElementById('jamPeersCount');
+      if (el) el.textContent = `👥 ${count} Listener${count === 1 ? '' : 's'}`;
+    }
+
+    function leaveJamRoom() {
+      if (peer) {
+        try { peer.destroy(); } catch(e) {}
+        peer = null;
+      }
+      jamConnections = [];
+      isJamHost = false;
+      currentJamRoomCode = null;
+      updateJamRoomUI(false);
+      showToast('Left the party room', '🚪');
+    }
+
+    function updateJamRoomUI(isActive, code = '') {
+      const notConnView = document.getElementById('jamNotConnectedView');
+      const connView = document.getElementById('jamConnectedView');
+      const statusDot = document.getElementById('jamStatusDot');
+      const tabJam = document.getElementById('tabJam');
+      const drawer = document.getElementById('jamChatDrawer');
+
+      if (isActive) {
+        notConnView.style.display = 'none';
+        connView.style.display = 'block';
+        document.getElementById('jamRoomCodeDisplay').textContent = code;
+        statusDot.style.display = 'inline-block';
+        tabJam.classList.add('in-room');
+        drawer.style.display = 'block';
+      } else {
+        notConnView.style.display = 'block';
+        connView.style.display = 'none';
+        statusDot.style.display = 'none';
+        tabJam.classList.remove('in-room');
+        drawer.style.display = 'none';
+      }
+    }
+
+    function sendChatMessage(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('jamChatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendChatMessage(jamNickname, text, true);
+      broadcastJamData({ type: 'CHAT', sender: jamNickname, text: text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+      input.value = '';
+    }
+
+    function sendQuickReaction(emoji) {
+      appendChatMessage(jamNickname, emoji, true);
+      broadcastJamData({ type: 'CHAT', sender: jamNickname, text: emoji, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+      showToast(`Sent ${emoji}`, '✨');
+    }
+
+    function appendChatMessage(sender, text, isMine) {
+      const container = document.getElementById('jamChatMessages');
+      const bubble = document.createElement('div');
+      bubble.className = `chat-bubble ${isMine ? 'mine' : 'theirs'}`;
+      
+      const senderHtml = isMine ? '' : `<div class="chat-sender-name">${escapeHtml(sender)}</div>`;
+      bubble.innerHTML = `${senderHtml}<div>${escapeHtml(text)}</div>`;
+      container.appendChild(bubble);
+      container.scrollTop = container.scrollHeight;
+
+      const body = document.getElementById('jamChatBody');
+      if (body.style.display === 'none' && !isMine) {
+        unreadChatCount++;
+        const badge = document.getElementById('jamChatBadge');
+        badge.textContent = unreadChatCount;
+        badge.style.display = 'inline-block';
+      }
+    }
+
+    function addSystemChatMessage(text) {
+      const container = document.getElementById('jamChatMessages');
+      const div = document.createElement('div');
+      div.className = 'chat-system-msg';
+      div.textContent = text;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function toggleJamChat() {
+      const body = document.getElementById('jamChatBody');
+      const icon = document.getElementById('jamChatToggleIcon');
+      if (body.style.display === 'none') {
+        body.style.display = 'flex';
+        icon.textContent = '▼';
+        unreadChatCount = 0;
+        document.getElementById('jamChatBadge').style.display = 'none';
+        const msgs = document.getElementById('jamChatMessages');
+        msgs.scrollTop = msgs.scrollHeight;
+      } else {
+        body.style.display = 'none';
+        icon.textContent = '▲';
+      }
+    }
+
+    function openJamChatDrawer() {
+      const drawer = document.getElementById('jamChatDrawer');
+      const body = document.getElementById('jamChatBody');
+      const icon = document.getElementById('jamChatToggleIcon');
+      drawer.style.display = 'block';
+      body.style.display = 'flex';
+      icon.textContent = '▼';
+      unreadChatCount = 0;
+      document.getElementById('jamChatBadge').style.display = 'none';
+    }
+
+    function openJamModal() {
+      document.getElementById('jamModal').style.display = 'flex';
+    }
+
+    function closeJamModal() {
+      document.getElementById('jamModal').style.display = 'none';
+    }
+
+    function copyJamInviteLink() {
+      const shareUrl = `${window.location.origin}${window.location.pathname}?room=${currentJamRoomCode}`;
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast('Invite link copied! 📋', '✅');
+      }).catch(() => {
+        showToast(`Room: ${currentJamRoomCode}`, '📋');
+      });
+    }
+
+    function shareJamWhatsApp() {
+      const shareUrl = `${window.location.origin}${window.location.pathname}?room=${currentJamRoomCode}`;
+      const text = `🎧 Join my music listening party on Music Downloader Pro! We can listen together in real-time & chat:\n${shareUrl}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    // Auto-detect room parameter in URL
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const room = params.get('room');
+      if (room) {
+        openJamModal();
+        const input = document.getElementById('jamJoinCodeInput');
+        if (input) input.value = room.toUpperCase();
+        showToast(`Invited to ${room}! Click Join to listen together 🎧`, '👋');
+      }
+    });
 
     // PWA Prompt
     let deferredPrompt = null;
