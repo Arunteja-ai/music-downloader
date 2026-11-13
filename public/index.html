@@ -2583,8 +2583,8 @@
     </div>
   </div>
 
-  <!-- Global Audio Element with Auto-Fallback -->
-  <audio id="globalAudio" preload="auto"></audio>
+  <!-- Global Audio Element with Auto-Fallback (iOS Safari Background Enabled) -->
+  <audio id="globalAudio" preload="auto" playsinline webkit-playsinline x5-playsinline></audio>
 
   <!-- ==================== MODAL: ADD TO PLAYLIST ==================== -->
   <div class="modal-overlay" id="addToPlaylistModal">
@@ -3534,27 +3534,42 @@
     let visualizerAnimId = null;
     let freqDataArray = null;
 
+    const synthBeatData = new Uint8Array(32);
+
     function initVisualizerLoop() {
-      if (!analyserNode) return;
       const liveCanvas = document.getElementById('liveBeatCanvas');
       const heroCanvas = document.getElementById('heroBeatCanvas');
-      freqDataArray = new Uint8Array(analyserNode.frequencyBinCount);
+      if (analyserNode) {
+        freqDataArray = new Uint8Array(analyserNode.frequencyBinCount);
+      }
 
       function renderLoop() {
         visualizerAnimId = requestAnimationFrame(renderLoop);
         
-        if (!globalAudio.paused && audioCtx && audioCtx.state === 'running') {
-          analyserNode.getByteFrequencyData(freqDataArray);
+        if (!globalAudio.paused) {
+          let data = null;
+          if (analyserNode && audioCtx && audioCtx.state === 'running') {
+            analyserNode.getByteFrequencyData(freqDataArray);
+            data = freqDataArray;
+          } else {
+            const t = (globalAudio.currentTime || 0) * 3.8;
+            for (let i = 0; i < 32; i++) {
+              const harmonic = Math.sin(t + i * 0.45) * 0.4 + 0.4;
+              const kickBeat = (Math.sin(t * 1.5) > 0.4 ? 0.35 : 0);
+              synthBeatData[i] = Math.floor(Math.min(1.0, harmonic + kickBeat) * 240);
+            }
+            data = synthBeatData;
+          }
           
           if (liveCanvas) {
-            drawBarsOnCanvas(liveCanvas, freqDataArray, 14, '#06b6d4', '#8b5cf6');
+            drawBarsOnCanvas(liveCanvas, data, 14, '#06b6d4', '#8b5cf6');
           }
           if (heroCanvas) {
-            drawBarsOnCanvas(heroCanvas, freqDataArray, 20, '#38bdf8', '#ec4899');
+            drawBarsOnCanvas(heroCanvas, data, 20, '#38bdf8', '#ec4899');
           }
 
           // Beat pulse on background ambient glow
-          const bassVal = (freqDataArray[0] + freqDataArray[1] + freqDataArray[2]) / 3;
+          const bassVal = (data[0] + data[1] + data[2]) / 3;
           const glow = document.getElementById('ambientGlow');
           if (glow && bassVal > 80) {
             glow.style.opacity = Math.min(0.85, 0.45 + (bassVal / 255) * 0.4);
@@ -4554,8 +4569,7 @@
       currentTrackIndex = idx;
       const song = currentQueue[idx];
 
-      // Init Web Audio API Equalizer on user gesture
-      initWebAudio();
+      // Resume Web Audio context only if user has active studio EQ/boost
       if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume().catch(() => {});
       }
@@ -4637,8 +4651,8 @@
           ]
         });
         navigator.mediaSession.playbackState = 'playing';
-        navigator.mediaSession.setActionHandler('play', () => { togglePlayPause(); });
-        navigator.mediaSession.setActionHandler('pause', () => { togglePlayPause(); });
+        navigator.mediaSession.setActionHandler('play', () => { globalAudio.play().catch(() => {}); });
+        navigator.mediaSession.setActionHandler('pause', () => { globalAudio.pause(); });
         navigator.mediaSession.setActionHandler('previoustrack', () => { playPrevSong(); });
         navigator.mediaSession.setActionHandler('nexttrack', () => { playNextSong(); });
         try {
@@ -4789,27 +4803,15 @@
       } catch (err) {}
     }
 
-    // Keep AudioContext awake on tab switch, phone lock, or background
+    // Resume Web Audio context when returning to foreground (prevents iOS audio session interruption)
     document.addEventListener('visibilitychange', () => {
-      if (!globalAudio.paused) {
+      if (document.visibilityState === 'visible') {
         if (audioCtx && audioCtx.state === 'suspended') {
           audioCtx.resume().catch(() => {});
         }
-        if (globalAudio.paused) {
-          globalAudio.play().catch(() => {});
+        if (mpcAudioCtx && mpcAudioCtx.state === 'suspended') {
+          mpcAudioCtx.resume().catch(() => {});
         }
-      }
-    });
-
-    window.addEventListener('pagehide', () => {
-      if (!globalAudio.paused && audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume().catch(() => {});
-      }
-    });
-
-    window.addEventListener('blur', () => {
-      if (!globalAudio.paused && audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume().catch(() => {});
       }
     });
 

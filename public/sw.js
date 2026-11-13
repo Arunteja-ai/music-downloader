@@ -1,4 +1,4 @@
-const CACHE_NAME = 'music-downloader-v2';
+const CACHE_NAME = 'music-downloader-v3';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -9,8 +9,18 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // Let network handle API and audio streams
-  if (e.request.url.includes('/api/') || e.request.url.includes('.mp4') || e.request.url.includes('.mp3')) {
+  // Completely bypass service worker for media streams, CDNs, and API calls to ensure native background streaming
+  if (
+    e.request.destination === 'audio' ||
+    e.request.destination === 'video' ||
+    e.request.url.includes('.mp4') ||
+    e.request.url.includes('.mp3') ||
+    e.request.url.includes('.m4a') ||
+    e.request.url.includes('saavncdn.com') ||
+    e.request.url.includes('jio.com') ||
+    e.request.url.includes('/.netlify/functions/') ||
+    e.request.url.includes('/api/')
+  ) {
     return;
   }
   e.respondWith(
