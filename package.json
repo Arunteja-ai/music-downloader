@@ -1,15 +1,10 @@
 {
-  "name": "simple-webpage",
+  "name": "music-downloader",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Full-length 320kbps music downloader and player",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node dev-server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "crypto-js": "^4.2.0"
   }
