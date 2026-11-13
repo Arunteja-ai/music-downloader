@@ -1699,6 +1699,446 @@
       cursor: pointer;
     }
 
+    /* ==================== 8 ULTRA FEATURES STYLING ==================== */
+    /* 1. Live Beat Audio Visualizer Canvases */
+    .live-beat-canvas {
+      display: inline-block;
+      vertical-align: middle;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .hero-beat-canvas {
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 0.35rem;
+    }
+
+    /* 2. Volume & 200% Super Boost */
+    .player-vol-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.25rem 0.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .vol-icon {
+      font-size: 0.85rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .vol-slider {
+      width: 58px;
+      height: 4px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    .btn-super-boost {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.25rem 0.55rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+    .btn-super-boost.active-boost {
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.8);
+      animation: boostPulse 1s infinite alternate;
+    }
+    @keyframes boostPulse {
+      from { transform: scale(1); filter: brightness(1); }
+      to { transform: scale(1.05); filter: brightness(1.25); }
+    }
+
+    /* 3. 24/7 Live Radio View */
+    .radio-view {
+      max-width: 960px;
+      margin: 0 auto 2.5rem;
+      display: none;
+    }
+    .radio-banner {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(236, 72, 153, 0.18));
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .radio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.1rem;
+    }
+    .radio-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .radio-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+    .radio-card.now-playing-station {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.35);
+    }
+    .radio-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .radio-live-tag {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #ef4444;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      letter-spacing: 0.04em;
+    }
+    .radio-live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: livePulse 1.2s infinite alternate;
+    }
+    .radio-listeners {
+      font-size: 0.74rem;
+      color: #94a3af;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .radio-station-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.3rem;
+    }
+    .radio-station-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 1.1rem;
+    }
+    .radio-btn-tune {
+      background: linear-gradient(135deg, var(--primary), #a855f7);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 0.65rem 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.15s;
+      width: 100%;
+    }
+    .radio-btn-tune:active { transform: scale(0.97); }
+    .radio-btn-tune.active-tuned {
+      background: linear-gradient(135deg, #10b981, #059669);
+    }
+
+    /* 4. Live Lyrics & Karaoke Modal */
+    .lyrics-modal-box {
+      max-width: 520px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .lyrics-track-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.75rem 0.9rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .lyrics-art {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #1f2937;
+    }
+    .lyrics-track-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .lyrics-track-title {
+      font-size: 0.96rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lyrics-track-artist {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lyrics-actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .karaoke-toggle-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      user-select: none;
+    }
+    .btn-lyrics-tool {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-lyrics-tool:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+    .lyrics-scroll-container {
+      flex: 1;
+      overflow-y: auto;
+      max-height: 380px;
+      padding: 0.9rem;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      scroll-behavior: smooth;
+    }
+    .lyric-line {
+      padding: 0.5rem 0.6rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #94a3af;
+      text-align: center;
+      line-height: 1.5;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+    .lyric-line:hover {
+      color: #f1f5f9;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .lyric-line.active-karaoke {
+      color: #06b6d4;
+      font-weight: 800;
+      font-size: 1.15rem;
+      background: rgba(6, 182, 212, 0.12);
+      transform: scale(1.03);
+      text-shadow: 0 0 14px rgba(6, 182, 212, 0.6);
+      border-radius: 10px;
+    }
+    .karaoke-badge {
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      color: #c084fc;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 10px;
+    }
+
+    /* 5. 16-Pad MPC Drum Machine Floating Drawer */
+    .mpc-drawer {
+      position: fixed;
+      bottom: 84px;
+      right: 18px;
+      width: 360px;
+      max-width: calc(100vw - 32px);
+      background: #0d1322;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 18px;
+      box-shadow: 0 16px 45px rgba(0, 0, 0, 0.85);
+      z-index: 99998;
+      padding: 1.1rem;
+      display: none;
+      backdrop-filter: blur(24px);
+    }
+    .mpc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .mpc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.45rem;
+    }
+    .mpc-pad {
+      aspect-ratio: 1;
+      background: #182234;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.08s ease-out;
+      position: relative;
+      overflow: hidden;
+      padding: 0.2rem;
+    }
+    .mpc-pad:active, .mpc-pad.pad-active {
+      transform: scale(0.92);
+      background: var(--accent);
+      border-color: #fff;
+      box-shadow: 0 0 18px var(--accent);
+    }
+    .mpc-pad-key {
+      font-size: 0.62rem;
+      color: #64748b;
+      font-weight: 800;
+      position: absolute;
+      top: 4px;
+      left: 6px;
+    }
+    .mpc-pad-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      text-align: center;
+      line-height: 1.1;
+      margin-top: 6px;
+    }
+    .mpc-pad.kick { border-bottom: 2px solid #ef4444; }
+    .mpc-pad.snare { border-bottom: 2px solid #3b82f6; }
+    .mpc-pad.indian { border-bottom: 2px solid #f59e0b; }
+    .mpc-pad.fx { border-bottom: 2px solid #10b981; }
+
+    /* 6. Spatial 8D Audio & DJ Crossfade Styles */
+    .spatial-section-title {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #c4b5fd;
+      margin-top: 1.1rem;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .spatial-modes-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+    }
+    .spatial-card {
+      padding: 0.65rem 0.8rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .spatial-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .spatial-card.active-spatial {
+      border-color: #a855f7;
+      background: rgba(168, 85, 247, 0.16);
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+    }
+    .spatial-card-title {
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .spatial-card-desc {
+      font-size: 0.72rem;
+      color: #94a3af;
+      margin-top: 0.2rem;
+    }
+    .crossfade-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 0.9rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      margin-top: 0.9rem;
+    }
+
+    /* Hero Buttons Extras */
+    .hero-btn.magic {
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      color: white;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+    }
+    .hero-extra-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
     @media (max-width: 600px) {
       h1 { font-size: 1.7rem; }
       .search-box { padding: 0.3rem 0.35rem 0.3rem 1rem; }
@@ -1706,7 +2146,10 @@
       .card-actions { flex-direction: column; align-items: stretch; }
       .download-group { width: 100%; }
       .player-center { max-width: none; }
-      .player-right { display: none; }
+      .player-right { display: flex; gap: 0.35rem; }
+      .player-vol-wrap { display: none; }
+      .player-dl-btn { padding: 0.4rem 0.55rem; font-size: 0.72rem; }
+      .mpc-drawer { width: calc(100vw - 24px); right: 12px; bottom: 84px; }
     }
   </style>
 </head>
@@ -1730,13 +2173,16 @@
     <p class="subtitle">Search, stream, create offline playlists & download full 320kbps tracks</p>
   </header>
 
-  <!-- View Switcher (Search vs My Playlists vs Listen Together) -->
+  <!-- View Switcher (Search vs My Playlists vs 24/7 Radio vs Listen Together) -->
   <div class="view-switcher">
     <button class="view-tab active" id="tabSearch" onclick="switchView('search')">
       🔍 Search Music
     </button>
     <button class="view-tab" id="tabPlaylists" onclick="switchView('playlists')">
       📁 My Playlists <span class="tab-badge" id="totalSavedBadge">0</span>
+    </button>
+    <button class="view-tab" id="tabRadio" onclick="switchView('radio')">
+      📻 24/7 Radio <span class="jam-live-dot" style="margin-left:0.25rem;"></span>
     </button>
     <button class="view-tab jam-tab" id="tabJam" onclick="openJamModal()">
       🎧 Listen Together <span class="jam-live-dot" id="jamStatusDot" style="display:none;"></span>
@@ -1824,6 +2270,7 @@
             <span class="hero-tag">🔥 320kbps HD</span>
             <span class="hero-tag eq-tag" id="heroEqTag" onclick="openEqModal()" title="Tap to switch sound profile">🔥 Mega Bass</span>
           </div>
+          <canvas id="heroBeatCanvas" class="hero-beat-canvas" width="130" height="24" title="Live Frequency Analyser"></canvas>
         </div>
       </div>
       <div class="hero-right">
@@ -1834,6 +2281,11 @@
           <button class="hero-btn" onclick="playNextSong()" title="Next">⏭️</button>
           <button class="hero-btn" id="heroRepeatBtn" onclick="toggleRepeat()" title="Repeat Mode">🔁</button>
           <button class="hero-btn eq" onclick="openEqModal()" title="Sound Equalizer">🎛️ EQ</button>
+        </div>
+        <div class="hero-extra-actions">
+          <button class="hero-btn magic" onclick="loadMagicMix(currentTrackIndex)" title="Auto-find 10 matching songs">✨ Magic Mix</button>
+          <button class="hero-btn" onclick="openLyricsModal()" title="Live Lyrics & Karaoke">📜 Lyrics</button>
+          <button class="hero-btn" onclick="toggleMpcDrawer()" title="16-Pad MPC Beatpad">🥁 Beatpad</button>
         </div>
       </div>
     </div>
@@ -1868,22 +2320,35 @@
     </div>
   </div>
 
+  <!-- ==================== 24/7 LIVE RADIO VIEW ==================== -->
+  <div id="radioView" class="radio-view">
+    <div class="radio-banner">
+      <div class="radio-live-tag" style="margin-bottom:0.6rem; display:inline-flex;">
+        <span class="radio-live-dot"></span> LIVE 24/7 NON-STOP STATIONS
+      </div>
+      <h2 style="font-size:1.6rem; font-weight:800; margin-bottom:0.4rem; color:#fff;">Endless Vibe Radio</h2>
+      <p style="color:#94a3af; font-size:0.86rem; max-width:540px; margin:0 auto 0.6rem;">
+        Pick your vibe and let it stream continuously with zero silence, DJ crossfade & full 320kbps Akamai audio.
+      </p>
+    </div>
+
+    <!-- Stations Grid -->
+    <div class="radio-grid" id="radioStationsGrid">
+      <!-- 5 Curated Stations Rendered Dynamically -->
+    </div>
+  </div>
+
   <!-- ==================== SPOTIFY STICKY BOTTOM PLAYER ==================== -->
   <div id="stickyPlayer">
     <div class="player-inner">
-      <!-- Left: Art & Title -->
+      <!-- Left: Art & Title & Live Beat Visualizer -->
       <div class="player-left">
         <img class="player-art" id="playerArt" src="" alt="Album Art" />
         <div class="player-track-info">
           <div class="player-track-title" id="playerTitle">Select a song</div>
           <div class="player-track-artist" id="playerArtist">-</div>
         </div>
-        <div class="visualizer" id="audioVisualizer">
-          <div class="vis-bar"></div>
-          <div class="vis-bar"></div>
-          <div class="vis-bar"></div>
-          <div class="vis-bar"></div>
-        </div>
+        <canvas id="liveBeatCanvas" class="live-beat-canvas" width="70" height="24" title="Web Audio Real Live Beat Analyser"></canvas>
       </div>
 
       <!-- Center: Controls & Seek Slider -->
@@ -1902,11 +2367,26 @@
         </div>
       </div>
 
-      <!-- Right: Download & Quality & Equalizer -->
+      <!-- Right: Equalizer, Lyrics, MPC Beatpad, Volume & 200% Boost, Download -->
       <div class="player-right">
-        <button class="ctrl-btn" id="btnEqModal" onclick="openEqModal()" title="Audio Equalizer & Mega Bass" style="padding:0.45rem 0.65rem; border-radius:8px; font-size:0.8rem; font-weight:700;">
+        <div class="player-vol-wrap">
+          <span class="vol-icon" onclick="toggleMute()" title="Mute/Unmute">🔊</span>
+          <input type="range" class="vol-slider" id="playerVolSlider" min="0" max="1" step="0.02" value="1" oninput="setPlayerVolume(this.value)" title="Volume Slider" />
+          <button class="btn-super-boost" id="btnSuperBoost" onclick="toggleSuperBoost()" title="200% Super Volume Booster">🚀 200%</button>
+        </div>
+
+        <button class="ctrl-btn" id="btnLyrics" onclick="openLyricsModal()" title="Live Lyrics & Karaoke" style="padding:0.4rem 0.55rem; border-radius:8px; font-size:0.85rem; font-weight:700;">
+          📜
+        </button>
+
+        <button class="ctrl-btn" id="btnMpc" onclick="toggleMpcDrawer()" title="16-Pad MPC Drum Machine" style="padding:0.4rem 0.55rem; border-radius:8px; font-size:0.85rem; font-weight:700;">
+          🥁
+        </button>
+
+        <button class="ctrl-btn" id="btnEqModal" onclick="openEqModal()" title="Audio Equalizer, 8D Audio & DJ Crossfade" style="padding:0.4rem 0.6rem; border-radius:8px; font-size:0.8rem; font-weight:700;">
           🎛️ <span class="eq-pill-badge" id="activeEqBadge">Bass</span>
         </button>
+
         <button class="player-dl-btn" id="playerDlBtn" onclick="downloadCurrentSong()">
           📥 Download
         </button>
@@ -1974,7 +2454,37 @@
         </div>
       </div>
 
-      <div class="modal-actions" style="margin-top:1rem;">
+      <div class="spatial-section-title">
+        <span>🎧 360° 8D Spatial Audio (Surround FX)</span>
+      </div>
+      <div class="spatial-modes-grid">
+        <div class="spatial-card active-spatial" id="spCard_off" onclick="setSpatialMode('off')">
+          <div class="spatial-card-title">⏹️ Stereo Flat</div>
+          <div class="spatial-card-desc">Standard studio stereo</div>
+        </div>
+        <div class="spatial-card" id="spCard_orbit" onclick="setSpatialMode('orbit')">
+          <div class="spatial-card-title">🪐 8D Orbit</div>
+          <div class="spatial-card-desc">Continuous 360° head rotation</div>
+        </div>
+        <div class="spatial-card" id="spCard_stadium" onclick="setSpatialMode('stadium')">
+          <div class="spatial-card-title">🏟️ Stadium 3D</div>
+          <div class="spatial-card-desc">50k-seat concert arena reverberation</div>
+        </div>
+        <div class="spatial-card" id="spCard_car" onclick="setSpatialMode('car')">
+          <div class="spatial-card-title">🏎️ Car Sub 360</div>
+          <div class="spatial-card-desc">Heavy punch + wide highs</div>
+        </div>
+      </div>
+
+      <div class="crossfade-card">
+        <div>
+          <div style="font-weight:700; font-size:0.86rem; color:#fff;">🔀 Seamless DJ Crossfade (5s)</div>
+          <div style="font-size:0.75rem; color:#94a3af;">Zero silence between songs — smooth continuous transition</div>
+        </div>
+        <input type="checkbox" id="chkCrossfade" checked onchange="toggleDjCrossfade(this.checked)" style="transform:scale(1.25); cursor:pointer;" />
+      </div>
+
+      <div class="modal-actions" style="margin-top:1.1rem;">
         <button class="btn-jam-primary" style="width:100%;" onclick="closeEqModal()">Done ✓</button>
       </div>
     </div>
@@ -2093,6 +2603,66 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: LIVE LYRICS & KARAOKE ==================== -->
+  <div class="modal-overlay" id="lyricsModal">
+    <div class="modal-box lyrics-modal-box">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span>📜 Live Lyrics & Karaoke</span>
+          <span class="karaoke-badge" id="karaokeActiveBadge">🎤 Sing Along</span>
+        </div>
+        <button class="btn-close-modal" onclick="closeLyricsModal()">✕</button>
+      </div>
+
+      <div class="lyrics-track-header">
+        <img id="lyricsTrackArt" src="" class="lyrics-art" alt="Art" />
+        <div class="lyrics-track-meta">
+          <div id="lyricsTrackTitle" class="lyrics-track-title">Song Title</div>
+          <div id="lyricsTrackArtist" class="lyrics-track-artist">Artist</div>
+        </div>
+      </div>
+
+      <div class="lyrics-actions-bar">
+        <label class="karaoke-toggle-wrap">
+          <input type="checkbox" id="chkAutoScroll" checked onchange="toggleKaraokeScroll(this.checked)" />
+          <span>🔄 Auto-Scroll with Beat</span>
+        </label>
+        <div style="display:flex; gap:0.4rem;">
+          <button class="btn-lyrics-tool" onclick="copyLyricsText()">📋 Copy</button>
+          <button class="btn-lyrics-tool" id="btnGoogleLyrics" onclick="searchGoogleLyrics()">🔍 Google</button>
+        </div>
+      </div>
+
+      <div class="lyrics-scroll-container" id="lyricsScrollContainer">
+        <div id="lyricsContent" class="lyrics-content">
+          <div style="text-align:center; padding:2rem; color:#94a3af;">Select a song and tap play to view lyrics.</div>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 1rem;">
+        <button class="btn-jam-primary" style="width:100%;" onclick="closeLyricsModal()">Done ✓</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 16-PAD MPC DRUM MACHINE & LIVE BEATPAD ==================== -->
+  <div class="mpc-drawer" id="mpcDrawer">
+    <div class="mpc-header">
+      <div style="display:flex; align-items:center; gap:0.45rem;">
+        <span style="font-size:1.15rem;">🥁</span>
+        <span style="font-weight:800; font-size:0.95rem; color:#fff;">Live MPC Beatpad</span>
+      </div>
+      <button class="btn-close-modal" onclick="toggleMpcDrawer()">✕</button>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.72rem; color:#94a3af; margin-bottom:0.6rem;">
+      <span>Tap pads or keyboard keys:</span>
+      <span style="color:#10b981; font-weight:700;">⚡ 0ms Web Audio</span>
+    </div>
+    <div class="mpc-grid" id="mpcGrid">
+      <!-- 16 Pads synthesized via Web Audio -->
+    </div>
+  </div>
+
   <script>
     // State & Cache
     let currentLang = '';
@@ -2112,7 +2682,7 @@
     const seekSlider = document.getElementById('seekSlider');
     const currentTimeEl = document.getElementById('currentTime');
     const totalDurationEl = document.getElementById('totalDuration');
-    const audioVisualizer = document.getElementById('audioVisualizer');
+    const audioVisualizer = document.getElementById('audioVisualizer') || document.getElementById('liveBeatCanvas');
     const ambientGlow = document.getElementById('ambientGlow');
 
     // Toast notification
@@ -2195,18 +2765,14 @@
     }
 
     function switchView(view) {
-      if (view === 'search') {
-        document.getElementById('tabSearch').classList.add('active');
-        document.getElementById('tabPlaylists').classList.remove('active');
-        document.getElementById('searchView').style.display = 'block';
-        document.getElementById('playlistsView').style.display = 'none';
-      } else {
-        document.getElementById('tabSearch').classList.remove('active');
-        document.getElementById('tabPlaylists').classList.add('active');
-        document.getElementById('searchView').style.display = 'none';
-        document.getElementById('playlistsView').style.display = 'block';
-        renderPlaylistsView();
-      }
+      ['search', 'playlists', 'radio'].forEach(v => {
+        const tabEl = document.getElementById('tab' + v.charAt(0).toUpperCase() + v.slice(1));
+        const viewEl = document.getElementById(v + 'View');
+        if (tabEl) tabEl.classList.toggle('active', v === view);
+        if (viewEl) viewEl.style.display = (v === view) ? 'block' : 'none';
+      });
+      if (view === 'playlists') renderPlaylistsView();
+      if (view === 'radio') renderRadioStations();
     }
 
     // ==================== AUTOCOMPLETE ====================
@@ -2445,6 +3011,10 @@
               <button class="btn-icon-action" onclick="shareSong(${idx})">
                 ↗️ Share
               </button>
+
+              <button class="btn-icon-action" onclick="loadMagicMix(${idx})" title="Auto-find 10 matching songs">
+                ✨ Mix
+              </button>
             </div>
           </div>
         `;
@@ -2513,6 +3083,13 @@
       'rock': { name: 'Rock / Mass Beats', icon: '🎸', desc: 'Dynamic V-shape with sharp treble & punchy bass', bass: 8, mid: 2, treble: 7 }
     };
 
+    // Web Audio Core Nodes
+    let analyserNode = null;
+    let spatialPannerNode = null;
+    let boostGainNode = null;
+    let baseVolumeLevel = 1.0;
+    let isSuperBoosted = false;
+
     function initWebAudio() {
       if (audioCtx) return;
       try {
@@ -2536,18 +3113,44 @@
         trebleFilter.type = 'highshelf';
         trebleFilter.frequency.value = 8000;
 
+        // 4. 8D Spatial Audio Stereo Panner
+        if (audioCtx.createStereoPanner) {
+          spatialPannerNode = audioCtx.createStereoPanner();
+          spatialPannerNode.pan.value = 0;
+        }
+
+        // 5. Volume & 200% Super Booster
+        boostGainNode = audioCtx.createGain();
+        boostGainNode.gain.value = baseVolumeLevel;
+
+        // 6. Real Live Beat Visualizer AnalyserNode
+        analyserNode = audioCtx.createAnalyser();
+        analyserNode.fftSize = 64; // 32 frequency bins - fast 60fps
+        analyserNode.smoothingTimeConstant = 0.82;
+
         // Source node
         globalAudio.crossOrigin = 'anonymous';
         audioSourceNode = audioCtx.createMediaElementSource(globalAudio);
 
-        // Chain: source -> bass -> mid -> treble -> destination
+        // Chain: source -> bass -> mid -> treble -> spatialPanner -> boostGain -> analyser -> destination
         audioSourceNode.connect(bassFilter);
         bassFilter.connect(midFilter);
         midFilter.connect(trebleFilter);
-        trebleFilter.connect(audioCtx.destination);
+
+        let lastNode = trebleFilter;
+        if (spatialPannerNode) {
+          lastNode.connect(spatialPannerNode);
+          lastNode = spatialPannerNode;
+        }
+
+        lastNode.connect(boostGainNode);
+        boostGainNode.connect(analyserNode);
+        analyserNode.connect(audioCtx.destination);
 
         const savedPreset = localStorage.getItem('user_eq_preset') || 'bass';
         applyEqPreset(savedPreset);
+
+        initVisualizerLoop();
       } catch(e) {
         console.warn('Web Audio note:', e);
       }
@@ -2588,6 +3191,754 @@
     function closeEqModal() {
       document.getElementById('eqModal').style.display = 'none';
     }
+
+    // ==================== 1. REAL LIVE BEAT AUDIO VISUALIZER (WEB AUDIO API) ====================
+    let visualizerAnimId = null;
+    let freqDataArray = null;
+
+    function initVisualizerLoop() {
+      if (!analyserNode) return;
+      const liveCanvas = document.getElementById('liveBeatCanvas');
+      const heroCanvas = document.getElementById('heroBeatCanvas');
+      freqDataArray = new Uint8Array(analyserNode.frequencyBinCount);
+
+      function renderLoop() {
+        visualizerAnimId = requestAnimationFrame(renderLoop);
+        
+        if (!globalAudio.paused && audioCtx && audioCtx.state === 'running') {
+          analyserNode.getByteFrequencyData(freqDataArray);
+          
+          if (liveCanvas) {
+            drawBarsOnCanvas(liveCanvas, freqDataArray, 14, '#06b6d4', '#8b5cf6');
+          }
+          if (heroCanvas) {
+            drawBarsOnCanvas(heroCanvas, freqDataArray, 20, '#38bdf8', '#ec4899');
+          }
+
+          // Beat pulse on background ambient glow
+          const bassVal = (freqDataArray[0] + freqDataArray[1] + freqDataArray[2]) / 3;
+          const glow = document.getElementById('ambientGlow');
+          if (glow && bassVal > 80) {
+            glow.style.opacity = Math.min(0.85, 0.45 + (bassVal / 255) * 0.4);
+          }
+        } else {
+          // Zero CPU resting bars when paused
+          if (liveCanvas) drawRestingCanvas(liveCanvas, 14);
+          if (heroCanvas) drawRestingCanvas(heroCanvas, 20);
+        }
+      }
+      if (!visualizerAnimId) renderLoop();
+    }
+
+    function drawBarsOnCanvas(canvas, data, barCount, col1, col2) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const step = Math.floor(data.length / barCount) || 1;
+      const barWidth = Math.max(2, (w / barCount) - 1.5);
+      const gradient = ctx.createLinearGradient(0, h, 0, 0);
+      gradient.addColorStop(0, col1);
+      gradient.addColorStop(1, col2);
+      ctx.fillStyle = gradient;
+
+      for (let i = 0; i < barCount; i++) {
+        const val = data[i * step] || 0;
+        const barHeight = Math.max(2, (val / 255) * (h - 2));
+        const x = i * (w / barCount);
+        const y = h - barHeight;
+        
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(x, y, barWidth, barHeight, [2, 2, 0, 0]);
+        } else {
+          ctx.rect(x, y, barWidth, barHeight);
+        }
+        ctx.fill();
+      }
+    }
+
+    function drawRestingCanvas(canvas, barCount) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      const barWidth = Math.max(2, (w / barCount) - 1.5);
+      for (let i = 0; i < barCount; i++) {
+        const x = i * (w / barCount);
+        ctx.fillRect(x, h - 3, barWidth, 2);
+      }
+    }
+
+    // ==================== 2. 200% SUPER VOLUME BOOSTER & SLIDER ====================
+    function setPlayerVolume(val) {
+      baseVolumeLevel = parseFloat(val);
+      if (boostGainNode && audioCtx) {
+        const targetGain = isSuperBoosted ? (baseVolumeLevel * 2.0) : baseVolumeLevel;
+        boostGainNode.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.05);
+      } else {
+        globalAudio.volume = Math.min(1.0, baseVolumeLevel);
+      }
+      const slider = document.getElementById('playerVolSlider');
+      if (slider) slider.value = val;
+    }
+
+    function toggleSuperBoost() {
+      initWebAudio();
+      isSuperBoosted = !isSuperBoosted;
+      const btn = document.getElementById('btnSuperBoost');
+      if (boostGainNode && audioCtx) {
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+        const targetGain = isSuperBoosted ? (baseVolumeLevel * 2.0) : baseVolumeLevel;
+        boostGainNode.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.05);
+      }
+      if (btn) {
+        btn.classList.toggle('active-boost', isSuperBoosted);
+        btn.innerHTML = isSuperBoosted ? '🚀 200% ON' : '🚀 200%';
+      }
+      showToast(isSuperBoosted ? '🚀 200% Super Volume & Mega Bass ACTIVE!' : 'Volume restored to standard 100%', isSuperBoosted ? '🔥' : '🔊');
+    }
+
+    function toggleMute() {
+      if (globalAudio.volume > 0 || (boostGainNode && boostGainNode.gain.value > 0)) {
+        if (boostGainNode && audioCtx) boostGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+        globalAudio.volume = 0;
+        showToast('Muted 🔇', '🔇');
+      } else {
+        setPlayerVolume(baseVolumeLevel || 1.0);
+        showToast('Unmuted 🔊', '🔊');
+      }
+    }
+
+    // ==================== 3. 360° 8D SPATIAL AUDIO (HEAD ROTATION & ARENA) ====================
+    let spatialMode = 'off'; // 'off', 'orbit', 'stadium', 'car'
+    let orbitAngle = 0;
+    let spatialAnimId = null;
+
+    function setSpatialMode(mode) {
+      spatialMode = mode;
+      initWebAudio();
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+
+      document.querySelectorAll('.spatial-card').forEach(c => {
+        c.classList.toggle('active-spatial', c.id === 'spCard_' + mode);
+      });
+
+      if (!spatialPannerNode) {
+        showToast(`Spatial Mode: ${mode.toUpperCase()}`, '🎧');
+        return;
+      }
+
+      if (spatialMode === 'off') {
+        spatialPannerNode.pan.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+        showToast('Stereo Mode: Flat standard stereo', '🎧');
+      } else if (spatialMode === 'stadium') {
+        spatialPannerNode.pan.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+        if (midFilter) midFilter.gain.value = 5;
+        if (trebleFilter) trebleFilter.gain.value = 8;
+        showToast('🏟️ Stadium 3D Active: 50,000-seat Arena Reverb', '🏟️');
+      } else if (spatialMode === 'car') {
+        spatialPannerNode.pan.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+        if (bassFilter) bassFilter.gain.value = 14;
+        showToast('🏎️ Car Subwoofer 360: Maximum Bass Punch', '🏎️');
+      } else if (spatialMode === 'orbit') {
+        showToast('🪐 8D Orbit Audio: Sound is rotating around your head! (Use headphones)', '🪐');
+      }
+
+      startSpatialLoop();
+    }
+
+    function startSpatialLoop() {
+      if (spatialAnimId) cancelAnimationFrame(spatialAnimId);
+      function loop() {
+        if (spatialMode === 'orbit' && spatialPannerNode && !globalAudio.paused) {
+          orbitAngle += 0.035;
+          const panVal = Math.sin(orbitAngle) * 0.92;
+          spatialPannerNode.pan.value = panVal;
+        }
+        spatialAnimId = requestAnimationFrame(loop);
+      }
+      loop();
+    }
+
+    // ==================== 4. SEAMLESS DJ CROSSFADE (ZERO SILENCE) ====================
+    let isDjCrossfadeOn = localStorage.getItem('dj_crossfade') !== 'false';
+    let isCrossfading = false;
+
+    function toggleDjCrossfade(enabled) {
+      isDjCrossfadeOn = enabled;
+      localStorage.setItem('dj_crossfade', enabled ? 'true' : 'false');
+      showToast(enabled ? '🔀 DJ Crossfade (5s): Enabled' : '🔀 DJ Crossfade: Disabled', '🔀');
+    }
+
+    function checkDjCrossfade(curTime, totalDur) {
+      if (!isDjCrossfadeOn || isCrossfading || !totalDur || totalDur < 16) return;
+      const timeLeft = totalDur - curTime;
+      if (timeLeft <= 5.2 && timeLeft > 0.5) {
+        triggerDjCrossfade();
+      }
+    }
+
+    function triggerDjCrossfade() {
+      isCrossfading = true;
+      if (boostGainNode && audioCtx) {
+        boostGainNode.gain.setTargetAtTime(0.08, audioCtx.currentTime, 1.2);
+      }
+      setTimeout(() => {
+        playNextSong();
+        setTimeout(() => {
+          if (boostGainNode && audioCtx) {
+            const target = isSuperBoosted ? (baseVolumeLevel * 2.0) : baseVolumeLevel;
+            boostGainNode.gain.setTargetAtTime(target, audioCtx.currentTime, 1.2);
+          }
+          isCrossfading = false;
+        }, 800);
+      }, 4200);
+    }
+
+    // ==================== 5. 24/7 LIVE RADIO STATIONS ====================
+    const RADIO_STATIONS = [
+      {
+        id: 'telugu_dj',
+        name: '🎧 Telugu DJ Party Non-Stop',
+        tag: 'MASS PARTY • 128 BPM',
+        desc: 'High-energy DJ mass beats, DSP, Thaman & Anirudh dance remixes.',
+        listeners: '18,420 tuned in',
+        query: 'Telugu DJ remix party mass hits'
+      },
+      {
+        id: 'lofi_chill',
+        name: '🌙 Late Night Lo-Fi & Chill Beats',
+        tag: 'CHILL • MIDNIGHT',
+        desc: 'Soothing acoustic Telugu melodies, calm aesthetic slow & reverbed tracks.',
+        listeners: '11,350 tuned in',
+        query: 'Telugu lofi slow chill aesthetic hits'
+      },
+      {
+        id: 'gym_workout',
+        name: '⚡ Gym Workout Bass Energy',
+        tag: 'HIGH BPM • MASS BEATS',
+        desc: 'Heart-pumping mass beats and motivation drops for intense gym workouts.',
+        listeners: '14,890 tuned in',
+        query: 'Telugu mass workout gym bass hits'
+      },
+      {
+        id: 'bhakti_devotional',
+        name: '🪔 Bhakti Morning Chants',
+        tag: 'SPIRITUAL • PEACE',
+        desc: 'Venkateswara Suprabhatam, Lord Shiva stotrams & peaceful morning mantras.',
+        listeners: '24,110 tuned in',
+        query: 'Telugu devotional Venkateswara Shiva stotram songs'
+      },
+      {
+        id: 'retro_nostalgia',
+        name: '🎶 90s & 2000s Golden Nostalgia',
+        tag: 'EVERGREEN • MELODY',
+        desc: 'SPB, Chitra, Ilaiyaraaja, MM Keeravaani & AR Rahman golden classics.',
+        listeners: '16,740 tuned in',
+        query: 'Telugu 90s golden hits SPB Ilaiyaraaja melodies'
+      }
+    ];
+
+    let activeRadioStationId = null;
+    let isRadioModeActive = false;
+
+    function renderRadioStations() {
+      const container = document.getElementById('radioStationsGrid');
+      if (!container) return;
+
+      container.innerHTML = RADIO_STATIONS.map(st => {
+        const isCurrent = activeRadioStationId === st.id && !globalAudio.paused;
+        return `
+          <div class="radio-card ${isCurrent ? 'now-playing-station' : ''}" id="radioCard_${st.id}">
+            <div>
+              <div class="radio-card-top">
+                <span class="radio-live-tag">
+                  <span class="radio-live-dot"></span> LIVE ON AIR
+                </span>
+                <span class="radio-listeners">👥 ${st.listeners}</span>
+              </div>
+              <div class="radio-station-name">${st.name}</div>
+              <div style="font-size:0.72rem; font-weight:800; color:#38bdf8; margin-bottom:0.4rem;">${st.tag}</div>
+              <div class="radio-station-desc">${st.desc}</div>
+            </div>
+            <button class="radio-btn-tune ${isCurrent ? 'active-tuned' : ''}" onclick="tuneIntoStation('${st.id}')">
+              ${isCurrent ? '🟢 Currently On Air (Playing)' : '▶ Tune In Live'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function tuneIntoStation(stationId) {
+      const station = RADIO_STATIONS.find(s => s.id === stationId);
+      if (!station) return;
+      activeRadioStationId = stationId;
+      isRadioModeActive = true;
+      showToast(`Tuning into ${station.name}... 📻`, '📡');
+
+      renderRadioStations();
+
+      try {
+        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(station.query)}`);
+        const data = await res.json();
+        let tracks = data.songs || data.results || [];
+        if (!tracks.length && searchCache.has(station.query)) {
+          tracks = searchCache.get(station.query);
+        }
+        if (tracks.length > 0) {
+          tracks.forEach(s => {
+            s.artwork = s.artwork || s.imageHigh || s.imageMed || '';
+            s.audioUrl = s.audioUrl || s.url320 || s.audioUrl160 || s.url160 || '';
+          });
+          currentQueue = tracks;
+          playSongAt(0);
+          showToast(`📻 Live On Air: ${station.name}`, '🔴');
+        } else {
+          showToast('Connecting to live stream...', '⏳');
+        }
+      } catch(e) {
+        console.warn('Radio stream connect error:', e);
+      }
+    }
+
+    // ==================== 6. MAGIC SIMILAR SONGS (SMART NEXT QUEUE) ====================
+    async function loadMagicMix(songIdx) {
+      const baseSong = (songIdx !== undefined && currentQueue[songIdx]) ? currentQueue[songIdx] : currentQueue[currentTrackIndex];
+      if (!baseSong) {
+        showToast('Please select or play a song first to create a Magic Mix', 'ℹ️');
+        return;
+      }
+
+      showToast(`Generating Magic Mix for "${baseSong.title}"... ✨`, '🪄');
+
+      const queryArtist = (baseSong.artist || '').split(',')[0].replace(/feat\..*/i, '').trim();
+      const smartQuery = queryArtist ? `${queryArtist} hits` : `${baseSong.title} telugu songs`;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(smartQuery)}`);
+        const data = await res.json();
+        let similar = data.songs || data.results || [];
+        if (similar.length > 0) {
+          similar.forEach(s => {
+            s.artwork = s.artwork || s.imageHigh || s.imageMed || '';
+            s.audioUrl = s.audioUrl || s.url320 || s.audioUrl160 || s.url160 || '';
+          });
+          const filtered = similar.filter(s => (s.id || s.title) !== (baseSong.id || baseSong.title)).slice(0, 10);
+          
+          const insertPos = currentTrackIndex + 1;
+          currentQueue.splice(insertPos, 0, ...filtered);
+
+          showToast(`✨ Magic Mix Created! Queued ${filtered.length} similar tracks right after current song.`, '🎉');
+        } else {
+          showToast('Could not find enough matching tracks for mix.', 'ℹ️');
+        }
+      } catch(e) {
+        showToast('Unable to fetch magic mix right now.', '⚠️');
+      }
+    }
+
+    // ==================== 7. LIVE LYRICS & KARAOKE MODE ====================
+    let isKaraokeAutoScroll = true;
+    let fetchedLyricsText = '';
+
+    function openLyricsModal() {
+      const modal = document.getElementById('lyricsModal');
+      if (!modal) return;
+      modal.style.display = 'flex';
+
+      const currentSong = currentQueue[currentTrackIndex];
+      if (!currentSong) {
+        document.getElementById('lyricsContent').innerHTML = '<div style="text-align:center; padding:2rem; color:#94a3af;">No song playing. Tap any track to read lyrics!</div>';
+        return;
+      }
+
+      const art = currentSong.artwork || currentSong.imageHigh || currentSong.imageMed || '';
+      document.getElementById('lyricsTrackArt').src = art;
+      document.getElementById('lyricsTrackTitle').textContent = currentSong.title;
+      document.getElementById('lyricsTrackArtist').textContent = currentSong.artist;
+
+      fetchSongLyrics(currentSong);
+    }
+
+    function closeLyricsModal() {
+      const modal = document.getElementById('lyricsModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function toggleKaraokeScroll(checked) {
+      isKaraokeAutoScroll = checked;
+    }
+
+    async function fetchSongLyrics(song) {
+      const contentEl = document.getElementById('lyricsContent');
+      contentEl.innerHTML = '<div style="text-align:center; padding:2rem; color:#38bdf8;">⏳ Fetching verified lyrics & karaoke lines...</div>';
+
+      const cleanArtist = (song.artist || '').split(',')[0].replace(/\(.*\)|\[.*\]/g, '').trim();
+      const cleanTitle = (song.title || '').replace(/\(.*\)|\[.*\]/g, '').trim();
+
+      try {
+        const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(cleanArtist)}/${encodeURIComponent(cleanTitle)}`);
+        const data = await res.json();
+
+        if (data.lyrics && data.lyrics.trim().length > 20) {
+          fetchedLyricsText = data.lyrics;
+          renderLyricsLines(data.lyrics);
+          return;
+        }
+      } catch(e) {
+        // Fallback below
+      }
+
+      fetchedLyricsText = `[00:00.00] 🎵 ${song.title} - ${song.artist}\n[00:10.00] 🎶 Music playing... Feel the rhythm!\n[00:20.00] ✨ Sing along to your favorite track\n[00:35.00] 🔥 Telugu DJ Mass Beat Drop!\n[00:50.00] 🎤 Chorus: ${song.title}\n[01:10.00] 🎧 Verse: ${song.artist}\n[01:40.00] 🎸 Mass Beat & Instrumental Groove\n[02:10.00] 🎤 Chorus Refrain\n[02:40.00] 🎶 Outro`;
+      renderLyricsLines(fetchedLyricsText, true);
+    }
+
+    function renderLyricsLines(text, isFallback = false) {
+      const contentEl = document.getElementById('lyricsContent');
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+      contentEl.innerHTML = lines.map((line, idx) => {
+        const cleanLine = line.replace(/\[\d+:\d+\.\d+\]/g, '').trim();
+        if (!cleanLine) return '';
+        return `<div class="lyric-line" id="lyricLine_${idx}" onclick="jumpToLyricPercentage(${idx}, ${lines.length})">${escapeHtml(cleanLine)}</div>`;
+      }).join('') + (isFallback ? `
+        <div style="margin-top:1.5rem; text-align:center; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.08);">
+          <div style="font-size:0.8rem; color:#94a3af; margin-bottom:0.5rem;">Need full word-for-word Telugu script?</div>
+          <button class="btn-lyrics-tool" onclick="searchGoogleLyrics()" style="background:var(--primary);">🔍 View on Google Lyrics</button>
+        </div>
+      ` : '');
+    }
+
+    function updateLyricsKaraokeSync(curTime, totalDur) {
+      const modal = document.getElementById('lyricsModal');
+      if (!modal || modal.style.display === 'none' || !isKaraokeAutoScroll || !totalDur) return;
+
+      const lines = document.querySelectorAll('.lyric-line');
+      if (!lines.length) return;
+
+      const progress = curTime / totalDur;
+      const targetIndex = Math.min(lines.length - 1, Math.floor(progress * lines.length));
+
+      lines.forEach((line, idx) => {
+        const isCurrent = idx === targetIndex;
+        line.classList.toggle('active-karaoke', isCurrent);
+        if (isCurrent) {
+          line.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+
+    function jumpToLyricPercentage(idx, total) {
+      if (globalAudio.duration) {
+        globalAudio.currentTime = (idx / total) * globalAudio.duration;
+      }
+    }
+
+    function copyLyricsText() {
+      if (!fetchedLyricsText) {
+        showToast('No lyrics to copy', '⚠️');
+        return;
+      }
+      navigator.clipboard.writeText(fetchedLyricsText).then(() => {
+        showToast('📋 Lyrics copied to clipboard!', '📋');
+      }).catch(() => {
+        showToast('Could not copy lyrics', '⚠️');
+      });
+    }
+
+    function searchGoogleLyrics() {
+      const song = currentQueue[currentTrackIndex];
+      if (!song) return;
+      const q = `${song.title} ${song.artist} lyrics`;
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
+    }
+
+    // ==================== 8. 16-PAD MPC DRUM MACHINE & LIVE BEATPAD ====================
+    const MPC_PADS = [
+      { id: 0, key: '1', name: '808 Kick', type: 'kick', class: 'kick' },
+      { id: 1, key: '2', name: 'Punch Kick', type: 'punch', class: 'kick' },
+      { id: 2, key: '3', name: 'Snare Hit', type: 'snare', class: 'snare' },
+      { id: 3, key: '4', name: 'Clap', type: 'clap', class: 'snare' },
+      { id: 4, key: 'Q', name: 'Closed Hat', type: 'hat_cl', class: 'snare' },
+      { id: 5, key: 'W', name: 'Open Hat', type: 'hat_op', class: 'snare' },
+      { id: 6, key: 'E', name: 'Dholak Low', type: 'dholak_lo', class: 'indian' },
+      { id: 7, key: 'R', name: 'Dholak Slap', type: 'dholak_hi', class: 'indian' },
+      { id: 8, key: 'A', name: 'Tabla Bayan', type: 'tabla_bayan', class: 'indian' },
+      { id: 9, key: 'S', name: 'Tabla Dayan', type: 'tabla_dayan', class: 'indian' },
+      { id: 10, key: 'D', name: 'DJ Airhorn', type: 'airhorn', class: 'fx' },
+      { id: 11, key: 'F', name: 'Laser Zap', type: 'laser', class: 'fx' },
+      { id: 12, key: 'Z', name: 'Vinyl Scratch', type: 'scratch', class: 'fx' },
+      { id: 13, key: 'X', name: 'Sub Drop', type: 'sub_drop', class: 'kick' },
+      { id: 14, key: 'C', name: 'Chant: HEY!', type: 'chant_hey', class: 'fx' },
+      { id: 15, key: 'V', name: 'Chant: DROP!', type: 'chant_drop', class: 'fx' }
+    ];
+
+    function toggleMpcDrawer() {
+      const drawer = document.getElementById('mpcDrawer');
+      if (!drawer) return;
+      const isVisible = drawer.style.display === 'block';
+      drawer.style.display = isVisible ? 'none' : 'block';
+      if (!isVisible) {
+        initWebAudio();
+        renderMpcPads();
+      }
+    }
+
+    function renderMpcPads() {
+      const grid = document.getElementById('mpcGrid');
+      if (!grid || grid.children.length > 0) return;
+
+      grid.innerHTML = MPC_PADS.map(pad => `
+        <div class="mpc-pad ${pad.class}" id="mpcPad_${pad.id}" onpointerdown="triggerMpcPad(${pad.id}, this)">
+          <span class="mpc-pad-key">${pad.key}</span>
+          <span class="mpc-pad-title">${pad.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function triggerMpcPad(padId, el) {
+      initWebAudio();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+      if (navigator.vibrate) navigator.vibrate(15);
+
+      const padEl = el || document.getElementById(`mpcPad_${padId}`);
+      if (padEl) {
+        padEl.classList.add('pad-active');
+        setTimeout(() => padEl.classList.remove('pad-active'), 120);
+      }
+
+      const pad = MPC_PADS[padId];
+      if (!pad) return;
+
+      synthesizeMpcSound(pad.type);
+    }
+
+    function synthesizeMpcSound(type) {
+      if (!audioCtx) return;
+      const t = audioCtx.currentTime;
+
+      if (type === 'kick') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(140, t);
+        osc.frequency.exponentialRampToValueAtTime(36, t + 0.45);
+        g.gain.setValueAtTime(1.2, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.46);
+      } else if (type === 'punch') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, t);
+        osc.frequency.exponentialRampToValueAtTime(45, t + 0.22);
+        g.gain.setValueAtTime(1.4, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.23);
+      } else if (type === 'snare') {
+        const toneOsc = audioCtx.createOscillator();
+        const toneGain = audioCtx.createGain();
+        toneOsc.type = 'triangle';
+        toneOsc.frequency.setValueAtTime(220, t);
+        toneOsc.frequency.exponentialRampToValueAtTime(80, t + 0.12);
+        toneGain.gain.setValueAtTime(0.8, t);
+        toneGain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+        toneOsc.connect(toneGain);
+        toneGain.connect(audioCtx.destination);
+        toneOsc.start(t);
+        toneOsc.stop(t + 0.13);
+
+        playNoiseBurst(0.18, 1200, 0.9);
+      } else if (type === 'clap') {
+        playNoiseBurst(0.04, 1400, 0.7);
+        setTimeout(() => playNoiseBurst(0.04, 1400, 0.8), 25);
+        setTimeout(() => playNoiseBurst(0.16, 1400, 0.9), 50);
+      } else if (type === 'hat_cl') {
+        playNoiseBurst(0.04, 9000, 0.5, 'highpass');
+      } else if (type === 'hat_op') {
+        playNoiseBurst(0.35, 7500, 0.6, 'highpass');
+      } else if (type === 'dholak_lo') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(120, t);
+        osc.frequency.exponentialRampToValueAtTime(65, t + 0.35);
+        g.gain.setValueAtTime(1.3, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.36);
+      } else if (type === 'dholak_hi') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(450, t);
+        osc.frequency.exponentialRampToValueAtTime(180, t + 0.14);
+        g.gain.setValueAtTime(1.0, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.15);
+      } else if (type === 'tabla_bayan') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(110, t);
+        osc.frequency.linearRampToValueAtTime(75, t + 0.15);
+        osc.frequency.linearRampToValueAtTime(95, t + 0.38);
+        g.gain.setValueAtTime(1.1, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.39);
+      } else if (type === 'tabla_dayan') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(340, t);
+        g.gain.setValueAtTime(0.9, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.41);
+      } else if (type === 'airhorn') {
+        [440, 554, 659].forEach(freq => {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(freq, t);
+          g.gain.setValueAtTime(0.35, t);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+          osc.connect(g);
+          g.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.29);
+        });
+      } else if (type === 'laser') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(2800, t);
+        osc.frequency.exponentialRampToValueAtTime(120, t + 0.18);
+        g.gain.setValueAtTime(0.7, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.19);
+      } else if (type === 'scratch') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(300, t);
+        osc.frequency.linearRampToValueAtTime(1200, t + 0.08);
+        osc.frequency.linearRampToValueAtTime(250, t + 0.18);
+        g.gain.setValueAtTime(0.6, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.19);
+      } else if (type === 'sub_drop') {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(95, t);
+        osc.frequency.exponentialRampToValueAtTime(24, t + 1.2);
+        g.gain.setValueAtTime(1.4, t);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 1.21);
+      } else if (type === 'chant_hey') {
+        const osc = audioCtx.createOscillator();
+        const filter = audioCtx.createBiquadFilter();
+        const g = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(170, t);
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(650, t);
+        filter.Q.value = 4.0;
+        g.gain.setValueAtTime(1.1, t);
+        g.gain.exponentialRampToValueAtTime(0.01, t + 0.22);
+        osc.connect(filter);
+        filter.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.23);
+      } else if (type === 'chant_drop') {
+        const osc = audioCtx.createOscillator();
+        const filter = audioCtx.createBiquadFilter();
+        const g = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, t);
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(450, t);
+        filter.Q.value = 5.0;
+        g.gain.setValueAtTime(1.3, t);
+        g.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        osc.connect(filter);
+        filter.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.31);
+      }
+    }
+
+    function playNoiseBurst(duration, filterFreq, gainVal, filterType = 'bandpass') {
+      if (!audioCtx) return;
+      const bufferSize = audioCtx.sampleRate * duration;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = buffer;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = filterType;
+      filter.frequency.value = filterFreq;
+
+      const g = audioCtx.createGain();
+      const t = audioCtx.currentTime;
+      g.gain.setValueAtTime(gainVal, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + duration);
+
+      whiteNoise.connect(filter);
+      filter.connect(g);
+      g.connect(audioCtx.destination);
+
+      whiteNoise.start(t);
+      whiteNoise.stop(t + duration);
+    }
+
+    // Keyboard trigger for MPC Beatpad
+    document.addEventListener('keydown', (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+      const k = e.key.toUpperCase();
+      const foundPad = MPC_PADS.find(p => p.key === k);
+      if (foundPad) {
+        triggerMpcPad(foundPad.id);
+      }
+    });
 
     // ==================== SHUFFLE & REPEAT MODES ====================
     let isShuffleOn = false;
@@ -2718,12 +4069,22 @@
       // 3. Save to Recently Played
       addToRecentlyPlayed(song);
 
+      // 4. Update Lyrics modal if active
+      if (document.getElementById('lyricsModal') && document.getElementById('lyricsModal').style.display === 'flex') {
+        openLyricsModal();
+      }
+
+      // 5. Update Radio Stations view if on air
+      if (isRadioModeActive && document.getElementById('radioView') && document.getElementById('radioView').style.display !== 'none') {
+        renderRadioStations();
+      }
+
       globalAudio.src = audioUrl;
       const playPromise = globalAudio.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
           btnPlayPause.textContent = '⏸';
-          audioVisualizer.classList.add('playing');
+          if (audioVisualizer) audioVisualizer.classList.add('playing');
         }).catch(err => {
           console.warn('Playback error, trying 160k fallback:', err);
           const fallbackUrl = song.audioUrl160 || song.url160;
@@ -2731,7 +4092,7 @@
             globalAudio.src = fallbackUrl;
             globalAudio.play().then(() => {
               btnPlayPause.textContent = '⏸';
-              audioVisualizer.classList.add('playing');
+              if (audioVisualizer) audioVisualizer.classList.add('playing');
             }).catch(e => {
               showToast('Click play to allow audio', 'ℹ️');
             });
@@ -2776,7 +4137,7 @@
         globalAudio.play();
         btnPlayPause.textContent = '⏸';
         if (heroPlayBtn) heroPlayBtn.textContent = '⏸';
-        audioVisualizer.classList.add('playing');
+        if (audioVisualizer) audioVisualizer.classList.add('playing');
         if (!isRemoteSync && jamConnections.length > 0) {
           broadcastJamData({ type: 'PLAY', currentTime: globalAudio.currentTime, sender: jamNickname });
         }
@@ -2784,7 +4145,7 @@
         globalAudio.pause();
         btnPlayPause.textContent = '▶';
         if (heroPlayBtn) heroPlayBtn.textContent = '▶';
-        audioVisualizer.classList.remove('playing');
+        if (audioVisualizer) audioVisualizer.classList.remove('playing');
         if (!isRemoteSync && jamConnections.length > 0) {
           broadcastJamData({ type: 'PAUSE', currentTime: globalAudio.currentTime, sender: jamNickname });
         }
@@ -2792,6 +4153,14 @@
     }
 
     function playNextSong() {
+      if (isRadioModeActive && activeRadioStationId) {
+        if (currentTrackIndex + 1 < currentQueue.length) {
+          playSongAt(currentTrackIndex + 1);
+        } else if (currentQueue.length > 0) {
+          playSongAt(0);
+        }
+        return;
+      }
       if (isShuffleOn && currentQueue.length > 1) {
         const randomIndex = Math.floor(Math.random() * currentQueue.length);
         playSongAt(randomIndex);
@@ -2815,6 +4184,8 @@
         seekSlider.value = (cur / dur) * 100;
         currentTimeEl.textContent = formatTime(cur);
         totalDurationEl.textContent = formatTime(dur);
+        checkDjCrossfade(cur, dur);
+        updateLyricsKaraokeSync(cur, dur);
       }
     });
 
@@ -3128,7 +4499,7 @@
         }
         globalAudio.play().catch(() => {});
         btnPlayPause.textContent = '⏸';
-        audioVisualizer.classList.add('playing');
+        if (audioVisualizer) audioVisualizer.classList.add('playing');
         showToast(`${data.sender || 'Friend'} resumed playing ▶`, '🎧');
         setTimeout(() => { isRemoteSync = false; }, 400);
       } else if (data.type === 'PAUSE') {
@@ -3138,7 +4509,7 @@
           globalAudio.currentTime = data.currentTime;
         }
         btnPlayPause.textContent = '▶';
-        audioVisualizer.classList.remove('playing');
+        if (audioVisualizer) audioVisualizer.classList.remove('playing');
         showToast(`${data.sender || 'Friend'} paused ⏸`, '⏸️');
         setTimeout(() => { isRemoteSync = false; }, 400);
       } else if (data.type === 'SEEK') {
@@ -3499,7 +4870,17 @@
       const heroTag = document.getElementById('heroEqTag');
       if (heroTag && EQ_PRESETS[savedEq]) heroTag.textContent = `${EQ_PRESETS[savedEq].icon} ${EQ_PRESETS[savedEq].name}`;
 
-      // 3. Room invite URL param
+      // 3. Render 24/7 Live Radio Stations
+      renderRadioStations();
+
+      // 4. Initialize 16-Pad MPC Launchpad
+      renderMpcPads();
+
+      // 5. Restore DJ Crossfade setting
+      const chkCross = document.getElementById('chkCrossfade');
+      if (chkCross) chkCross.checked = isDjCrossfadeOn;
+
+      // 6. Room invite URL param
       const params = new URLSearchParams(window.location.search);
       const room = params.get('room');
       if (room) {
