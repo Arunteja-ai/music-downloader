@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/api/search",
@@ -8,6 +9,10 @@
     {
       "source": "/api/suggest",
       "destination": "/api/suggest.js"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
     }
   ]
 }
