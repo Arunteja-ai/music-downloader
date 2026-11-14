@@ -2310,17 +2310,443 @@
       outline: none;
     }
 
-    @media (max-width: 600px) {
-      h1 { font-size: 1.7rem; }
-      .search-box { padding: 0.3rem 0.35rem 0.3rem 1rem; }
-      .search-btn { padding: 0.65rem 1rem; font-size: 0.88rem; }
-      .card-actions { flex-direction: column; align-items: stretch; }
-      .download-group { width: 100%; }
-      .player-center { max-width: none; }
-      .player-right { display: flex; gap: 0.35rem; }
-      .player-vol-wrap { display: none; }
-      .player-dl-btn { padding: 0.4rem 0.55rem; font-size: 0.72rem; }
-      .mpc-drawer { width: calc(100vw - 24px); right: 12px; bottom: 84px; }
+    /* ==================== SPOTIFY-STYLE BOTTOM NAVIGATION BAR ==================== */
+    .bottom-nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(10, 14, 23, 0.94);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 9998;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .bnav-btn {
+      background: transparent;
+      border: none;
+      color: #94a3af;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 16px;
+      cursor: pointer;
+      transition: color 0.18s, transform 0.15s;
+      user-select: none;
+    }
+    .bnav-btn:active {
+      transform: scale(0.92);
+    }
+    .bnav-btn.active {
+      color: #38bdf8;
+    }
+    .bnav-icon {
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+    .bnav-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    /* ==================== EXPANDABLE APPLE MUSIC PLAYER SHEET ==================== */
+    .expanded-player-sheet {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #111827 0%, #080d19 100%);
+      z-index: 10001;
+      display: flex;
+      flex-direction: column;
+      padding: max(1rem, env(safe-area-inset-top, 1rem)) 1.4rem max(1.4rem, env(safe-area-inset-bottom, 1.4rem));
+      transform: translateY(105%);
+      transition: transform 0.36s cubic-bezier(0.32, 1, 0.23, 1);
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .expanded-player-sheet.sheet-open {
+      transform: translateY(0);
+    }
+    .expanded-drag-handle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      padding-bottom: 0.8rem;
+      cursor: pointer;
+    }
+    .drag-bar {
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.25);
+    }
+    .expanded-header-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      color: #94a3af;
+      margin: 0 auto;
+    }
+    .btn-sheet-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .expanded-art-wrapper {
+      position: relative;
+      margin: auto auto 1.4rem;
+      width: min(80vw, 320px);
+      aspect-ratio: 1;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .expanded-art {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+      position: relative;
+      z-index: 2;
+    }
+    .expanded-art-glow {
+      position: absolute;
+      inset: -15px;
+      border-radius: 28px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, transparent 70%);
+      filter: blur(28px);
+      z-index: 1;
+      opacity: 0.85;
+      transition: background 0.8s ease;
+    }
+
+    .expanded-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2rem;
+      gap: 1rem;
+    }
+    .expanded-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .expanded-artist {
+      font-size: 0.95rem;
+      color: #94a3af;
+      margin-top: 0.25rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .btn-expanded-fav {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ef4444;
+      font-size: 1.2rem;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .expanded-seek-box {
+      margin-bottom: 1.2rem;
+    }
+    .expanded-seek-slider {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 6px;
+      outline: none;
+      cursor: pointer;
+    }
+    .expanded-seek-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+      cursor: pointer;
+    }
+    .expanded-time-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: #94a3af;
+      margin-top: 0.4rem;
+    }
+
+    .expanded-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      margin-bottom: 1.4rem;
+    }
+    .exp-ctrl-btn {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      font-size: 1.55rem;
+      cursor: pointer;
+      transition: transform 0.15s, color 0.15s;
+    }
+    .exp-ctrl-btn:active {
+      transform: scale(0.88);
+    }
+    .exp-ctrl-btn.active-mode {
+      color: #38bdf8;
+    }
+    .exp-play-btn {
+      background: #fff;
+      color: #000;
+      border: none;
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.28);
+      transition: transform 0.15s;
+    }
+    .exp-play-btn:active {
+      transform: scale(0.92);
+    }
+
+    .expanded-vol-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 1.4rem;
+      padding: 0 0.5rem;
+    }
+    .exp-vol-slider {
+      flex: 1;
+      height: 5px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 5px;
+      outline: none;
+    }
+    .exp-vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .expanded-actions-dock {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 0.6rem;
+    }
+    .exp-dock-btn {
+      background: transparent;
+      border: none;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 6px 0;
+      border-radius: 10px;
+      transition: background 0.15s;
+    }
+    .exp-dock-btn:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .dock-icon {
+      font-size: 1.25rem;
+    }
+    .dock-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94a3af;
+    }
+
+    /* Mini progress bar on sticky player */
+    .mini-progress-bar-wrap {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+      overflow: hidden;
+    }
+    .mini-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #8b5cf6);
+      transition: width 0.25s linear;
+    }
+
+    /* Drive Mode Overlay */
+    .drive-mode-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 10002;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 2rem 1.5rem;
+      touch-action: pan-y;
+      user-select: none;
+    }
+    .drive-mode-overlay.drive-active {
+      display: flex;
+    }
+    .drive-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drive-title {
+      font-size: 2.1rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.15;
+      margin-top: 1rem;
+    }
+    .drive-artist {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-top: 0.5rem;
+    }
+    .drive-giant-btn {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: #fff;
+      color: #000;
+      font-size: 3.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: auto;
+      border: none;
+      box-shadow: 0 0 50px rgba(255, 255, 255, 0.4);
+      cursor: pointer;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      body {
+        padding-bottom: 120px !important;
+      }
+      .view-switcher {
+        display: none !important;
+      }
+      header {
+        padding-top: 0.8rem;
+        margin-bottom: 0.8rem;
+      }
+      header h1 {
+        font-size: 1.45rem;
+      }
+      header .subtitle {
+        display: none;
+      }
+      header .badge {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.6rem;
+      }
+      #nowPlayingHero {
+        display: none !important;
+      }
+      #stickyPlayer {
+        bottom: 68px;
+        left: 10px;
+        right: 10px;
+        border-radius: 14px;
+        padding: 0.45rem 0.8rem 0.55rem;
+        background: rgba(18, 25, 40, 0.94);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.75);
+      }
+      .player-center {
+        display: none;
+      }
+      .player-vol-wrap {
+        display: none;
+      }
+      .player-dl-btn, #btnLyrics, #btnMpc, #btnEqModal {
+        display: none;
+      }
+      .player-right {
+        gap: 0.4rem;
+      }
+      .mobile-expand-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #fff;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+    }
+    @media (min-width: 769px) {
+      .bottom-nav-bar {
+        display: none;
+      }
+      .mobile-expand-btn {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -2416,6 +2842,26 @@
           </button>
           <button class="curated-chip" onclick="quickCuratedSearch('High Bass Gym Workout Beats', 'Gym Bass Beats')">
             💪 Gym Bass Beats
+          </button>
+        </div>
+
+        <!-- 1-Tap Mood Generator -->
+        <div class="curated-label" style="margin-top:0.9rem;">🤖 1-Tap Instant Mood Vibes</div>
+        <div class="curated-chips">
+          <button class="curated-chip" onclick="quickCuratedSearch('Telugu Night Highway Drive Songs', '🏎️ Highway Drive')">
+            🏎️ Highway Drive
+          </button>
+          <button class="curated-chip" onclick="quickCuratedSearch('Telugu Workout Gym Bass Drops', '⚡ Gym Beast Mode')">
+            ⚡ Gym Beast Mode
+          </button>
+          <button class="curated-chip" onclick="quickCuratedSearch('Telugu Late Night Lo-Fi Chill', '🌧️ Rainy Lo-Fi')">
+            🌧️ Rainy Lo-Fi
+          </button>
+          <button class="curated-chip" onclick="quickCuratedSearch('Telugu Devotional Morning Songs', '🪔 Morning Peace')">
+            🪔 Morning Peace
+          </button>
+          <button class="curated-chip" onclick="quickCuratedSearch('Telugu Sad Heartbreak Melodies', '💔 Late Night Feels')">
+            💔 Late Night Feels
           </button>
         </div>
       </div>
@@ -2529,9 +2975,12 @@
 
   <!-- ==================== SPOTIFY STICKY BOTTOM PLAYER ==================== -->
   <div id="stickyPlayer">
+    <div class="mini-progress-bar-wrap">
+      <div class="mini-progress-fill" id="miniProgressFill"></div>
+    </div>
     <div class="player-inner">
-      <!-- Left: Art & Title & Live Beat Visualizer -->
-      <div class="player-left">
+      <!-- Left: Art & Title & Live Beat Visualizer (Tap to expand full player on phone) -->
+      <div class="player-left" onclick="openExpandedPlayer()" style="cursor:pointer;" title="Tap to expand Now Playing">
         <img class="player-art" id="playerArt" src="" alt="Album Art" />
         <div class="player-track-info">
           <div class="player-track-title" id="playerTitle">Select a song</div>
@@ -2579,7 +3028,235 @@
         <button class="player-dl-btn" id="playerDlBtn" onclick="downloadCurrentSong()">
           📥 Download
         </button>
+
+        <!-- Mobile Quick Expand Pill Button -->
+        <button class="mobile-expand-btn" onclick="openExpandedPlayer()" title="Open Fullscreen Player">
+          ⛶
+        </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ==================== SPOTIFY BOTTOM NAVIGATION BAR ==================== -->
+  <nav class="bottom-nav-bar" id="bottomNavBar">
+    <button class="bnav-btn active" id="bnavHome" onclick="switchNavTab('home')">
+      <span class="bnav-icon">🏠</span>
+      <span class="bnav-label">Home</span>
+    </button>
+    <button class="bnav-btn" id="bnavSearch" onclick="switchNavTab('search')">
+      <span class="bnav-icon">🔍</span>
+      <span class="bnav-label">Search</span>
+    </button>
+    <button class="bnav-btn" id="bnavRadio" onclick="switchNavTab('radio')">
+      <span class="bnav-icon">📻</span>
+      <span class="bnav-label">Radio</span>
+    </button>
+    <button class="bnav-btn" id="bnavLibrary" onclick="switchNavTab('library')">
+      <span class="bnav-icon">📚</span>
+      <span class="bnav-label">Library</span>
+    </button>
+  </nav>
+
+  <!-- ==================== EXPANDED APPLE MUSIC FULLSCREEN PLAYER ==================== -->
+  <div class="expanded-player-sheet" id="expandedPlayerSheet">
+    <div class="expanded-drag-handle" onclick="closeExpandedPlayer()">
+      <div class="drag-bar"></div>
+      <div class="expanded-header-title">NOW PLAYING</div>
+      <button class="btn-sheet-close" onclick="closeExpandedPlayer()">⌄</button>
+    </div>
+
+    <div class="expanded-art-wrapper">
+      <img id="expandedArt" class="expanded-art" src="" alt="Album Artwork" />
+      <div class="expanded-art-glow" id="expandedArtGlow"></div>
+    </div>
+
+    <div class="expanded-meta-row">
+      <div class="expanded-text">
+        <div class="expanded-title" id="expandedTitle">Select a song</div>
+        <div class="expanded-artist" id="expandedArtist">-</div>
+      </div>
+      <button class="btn-expanded-fav" id="expandedFavBtn" onclick="toggleCurrentSongFavorite()" title="Add to Favorites">❤️</button>
+    </div>
+
+    <!-- Scrub Bar -->
+    <div class="expanded-seek-box">
+      <input type="range" class="expanded-seek-slider" id="expandedSeekSlider" value="0" min="0" max="100" step="1" oninput="onSeekInput(this.value)" />
+      <div class="expanded-time-row">
+        <span id="expandedCurrentTime">0:00</span>
+        <span id="expandedTotalDuration">0:00</span>
+      </div>
+    </div>
+
+    <!-- Big Tactile Media Controls -->
+    <div class="expanded-controls">
+      <button class="exp-ctrl-btn" id="expShuffleBtn" onclick="toggleShuffle()" title="Shuffle">🔀</button>
+      <button class="exp-ctrl-btn prev" onclick="playPrevSong()" title="Previous">⏮️</button>
+      <button class="exp-play-btn" id="expPlayBtn" onclick="togglePlayPause()" title="Play/Pause">▶</button>
+      <button class="exp-ctrl-btn next" onclick="playNextSong()" title="Next">⏭️</button>
+      <button class="exp-ctrl-btn" id="expRepeatBtn" onclick="toggleRepeat()" title="Repeat">🔁</button>
+    </div>
+
+    <!-- Volume Slider + 200% Super Booster -->
+    <div class="expanded-vol-row">
+      <span class="vol-icon" onclick="toggleMute()">🔈</span>
+      <input type="range" class="exp-vol-slider" id="expVolSlider" min="0" max="1" step="0.02" value="1" oninput="setPlayerVolume(this.value)" />
+      <span class="vol-icon" onclick="setPlayerVolume(1)">🔊</span>
+      <button class="btn-super-boost" id="expSuperBoostBtn" onclick="toggleSuperBoost()">🚀 200%</button>
+    </div>
+
+    <!-- Quick Action Bar -->
+    <div class="expanded-actions-dock">
+      <button class="exp-dock-btn" onclick="openLyricsModal()">
+        <span class="dock-icon">📜</span>
+        <span class="dock-label">Lyrics</span>
+      </button>
+      <button class="exp-dock-btn" onclick="openSleepTimerModal()">
+        <span class="dock-icon" id="dockSleepIcon">🌙</span>
+        <span class="dock-label" id="dockSleepLabel">Sleep</span>
+      </button>
+      <button class="exp-dock-btn" onclick="openAtmosphereModal()">
+        <span class="dock-icon">🌧️</span>
+        <span class="dock-label">Ambiance</span>
+      </button>
+      <button class="exp-dock-btn" onclick="openMoreToolsModal()">
+        <span class="dock-icon">•••</span>
+        <span class="dock-label">Studio</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: SLEEP TIMER ==================== -->
+  <div class="modal-overlay" id="sleepTimerModal">
+    <div class="modal-box" style="max-width: 360px;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>🌙 Sleep Timer</span>
+        <button class="btn-close-modal" onclick="closeSleepTimerModal()">✕</button>
+      </div>
+      <p style="color:#94a3af; font-size:0.84rem; margin-bottom:1rem;">
+        Music gently fades out when the timer ends so your phone battery stays safe overnight:
+      </p>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.6rem; margin-bottom:1rem;">
+        <button class="btn-setting-action" onclick="setSleepTimer(15)">⏱️ 15 Minutes</button>
+        <button class="btn-setting-action" onclick="setSleepTimer(30)">⏱️ 30 Minutes</button>
+        <button class="btn-setting-action" onclick="setSleepTimer(45)">⏱️ 45 Minutes</button>
+        <button class="btn-setting-action" onclick="setSleepTimer(60)">⏱️ 60 Minutes</button>
+        <button class="btn-setting-action" style="grid-column: span 2;" onclick="setSleepTimer('end')">🎵 End of Current Song</button>
+        <button class="btn-setting-danger" style="grid-column: span 2;" onclick="cancelSleepTimer()">✕ Turn Off Timer</button>
+      </div>
+      <div id="sleepTimerStatus" style="font-size:0.8rem; color:#38bdf8; text-align:center; font-weight:700;"></div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ATMOSPHERE SOUNDSCAPES ==================== -->
+  <div class="modal-overlay" id="atmosphereModal">
+    <div class="modal-box" style="max-width: 400px;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>🌧️ Chill Ambiance Mixer</span>
+        <button class="btn-close-modal" onclick="closeAtmosphereModal()">✕</button>
+      </div>
+      <p style="color:#94a3af; font-size:0.84rem; margin-bottom:1rem;">
+        Blend soothing procedural soundscapes over your songs in real-time. Works 100% offline with zero data!
+      </p>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.65rem; margin-bottom:1.2rem;">
+        <button class="btn-setting-action" id="atmoBtn_rain" onclick="toggleAtmosphere('rain')">🌧️ Rain on Window</button>
+        <button class="btn-setting-action" id="atmoBtn_cafe" onclick="toggleAtmosphere('cafe')">☕ Midnight Café</button>
+        <button class="btn-setting-action" id="atmoBtn_waves" onclick="toggleAtmosphere('waves')">🌊 Ocean Waves</button>
+        <button class="btn-setting-action" id="atmoBtn_fire" onclick="toggleAtmosphere('fire')">🔥 Campfire Crackle</button>
+      </div>
+      <div style="margin-bottom:0.8rem;">
+        <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:#cbd5e1; margin-bottom:0.3rem;">
+          <span>Ambiance Volume</span>
+          <span id="atmoVolDisplay">35%</span>
+        </div>
+        <input type="range" class="exp-vol-slider" min="0" max="1" step="0.05" value="0.35" oninput="setAtmosphereVolume(this.value)" style="width:100%;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: STUDIO MORE TOOLS ==================== -->
+  <div class="modal-overlay" id="moreToolsModal">
+    <div class="modal-box" style="max-width: 440px;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>⚡ Studio Music Tools</span>
+        <button class="btn-close-modal" onclick="closeMoreToolsModal()">✕</button>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.65rem; margin-top:0.8rem;">
+        <button class="btn-setting-action" onclick="closeMoreToolsModal(); openEqModal();">
+          🎛️ Equalizer & 8D
+        </button>
+        <button class="btn-setting-action" onclick="closeMoreToolsModal(); toggleMpcDrawer();">
+          🥁 16-Pad MPC Drums
+        </button>
+        <button class="btn-setting-action" onclick="closeMoreToolsModal(); loadMagicMix(currentTrackIndex);">
+          ✨ Magic Similar Mix
+        </button>
+        <button class="btn-setting-action" id="btnVocalMute" onclick="toggleVocalDampener()">
+          🎤 Remove Vocals
+        </button>
+        <button class="btn-setting-action" id="btnHapticSub" onclick="toggleHapticSubwoofer()">
+          📳 Haptic Bass Sub
+        </button>
+        <button class="btn-setting-action" onclick="closeMoreToolsModal(); openRingtoneModal();">
+          ✂️ 30s Ringtone Cutter
+        </button>
+        <button class="btn-setting-action" onclick="closeMoreToolsModal(); toggleDriveMode();">
+          🏎️ Minimal Drive Mode
+        </button>
+        <button class="btn-setting-action" style="grid-column: span 2;" onclick="downloadCurrentSong()">
+          📥 Download 320kbps MP3
+        </button>
+      </div>
+      <!-- Viral FX Section -->
+      <div style="margin-top:1.1rem; border-top:1px solid rgba(255,255,255,0.08); padding-top:0.8rem;">
+        <div style="font-size:0.82rem; font-weight:700; color:#c4b5fd; margin-bottom:0.5rem;">🔥 Viral Speed & Sound FX</div>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+          <button class="btn-setting-action" onclick="applyViralEffect('normal')">Original (1.0x)</button>
+          <button class="btn-setting-action" onclick="applyViralEffect('slowed')">🌙 Slowed (0.85x)</button>
+          <button class="btn-setting-action" onclick="applyViralEffect('nightcore')">⚡ Nightcore (1.2x)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: 30-SEC RINGTONE CUTTER ==================== -->
+  <div class="modal-overlay" id="ringtoneModal">
+    <div class="modal-box" style="max-width: 420px;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>✂️ 30s Ringtone Cutter</span>
+        <button class="btn-close-modal" onclick="closeRingtoneModal()">✕</button>
+      </div>
+      <p style="color:#94a3af; font-size:0.84rem; margin-bottom:1rem;">
+        Drag the start slider to pick your favorite chorus or drop, preview, and download:
+      </p>
+      <div style="background:rgba(255,255,255,0.04); padding:1rem; border-radius:14px; border:1px solid rgba(255,255,255,0.08); margin-bottom:1rem;">
+        <div style="display:flex; justify-content:space-between; font-size:0.86rem; font-weight:700; color:#38bdf8; margin-bottom:0.4rem;">
+          <span>Start: <span id="ringtoneStartVal">0:30</span></span>
+          <span>End: <span id="ringtoneEndVal">1:00</span></span>
+        </div>
+        <input type="range" class="exp-seek-slider" id="ringtoneSlider" min="0" max="200" step="1" value="30" oninput="onRingtoneSliderInput(this.value)" style="width:100%;" />
+        <div style="display:flex; justify-content:space-between; margin-top:0.9rem; gap:0.6rem;">
+          <button class="btn-setting-action" style="flex:1;" onclick="previewRingtoneSnippet()">▶️ Preview 30s</button>
+          <button class="player-dl-btn" style="flex:1.2; justify-content:center;" onclick="downloadRingtoneSnippet()">📥 Save Ringtone</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MINIMAL DRIVE MODE OVERLAY ==================== -->
+  <div class="drive-mode-overlay" id="driveModeOverlay">
+    <div class="drive-top-bar">
+      <div style="font-weight:900; letter-spacing:1px; color:#64748b; font-size:0.85rem;">🏎️ DRIVE & GYM MODE</div>
+      <button class="btn-setting-action" onclick="toggleDriveMode()">✕ Exit Drive Mode</button>
+    </div>
+    <div style="text-align:center;">
+      <div class="drive-title" id="driveTitle">Song Title</div>
+      <div class="drive-artist" id="driveArtist">Artist Name</div>
+    </div>
+    <button class="drive-giant-btn" id="driveGiantPlayBtn" onclick="togglePlayPause()">▶</button>
+    <div style="display:flex; justify-content:space-around; align-items:center;">
+      <button class="ctrl-btn" style="font-size:2.8rem;" onclick="playPrevSong()">⏮️</button>
+      <div style="color:#64748b; font-size:0.85rem; font-weight:700;">Swipe left/right to skip</div>
+      <button class="ctrl-btn" style="font-size:2.8rem;" onclick="playNextSong()">⏭️</button>
     </div>
   </div>
 
@@ -3635,13 +4312,16 @@
         globalAudio.volume = Math.min(1.0, baseVolumeLevel);
       }
       const slider = document.getElementById('playerVolSlider');
+      const expVol = document.getElementById('expVolSlider');
       if (slider) slider.value = val;
+      if (expVol) expVol.value = val;
     }
 
     function toggleSuperBoost() {
       initWebAudio();
       isSuperBoosted = !isSuperBoosted;
       const btn = document.getElementById('btnSuperBoost');
+      const expBoost = document.getElementById('expSuperBoostBtn');
       if (boostGainNode && audioCtx) {
         if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
         const targetGain = isSuperBoosted ? (baseVolumeLevel * 2.0) : baseVolumeLevel;
@@ -3650,6 +4330,10 @@
       if (btn) {
         btn.classList.toggle('active-boost', isSuperBoosted);
         btn.innerHTML = isSuperBoosted ? '🚀 200% ON' : '🚀 200%';
+      }
+      if (expBoost) {
+        expBoost.classList.toggle('active-boost', isSuperBoosted);
+        expBoost.innerHTML = isSuperBoosted ? '🚀 200% ON' : '🚀 200%';
       }
       showToast(isSuperBoosted ? '🚀 200% Super Volume & Mega Bass ACTIVE!' : 'Volume restored to standard 100%', isSuperBoosted ? '🔥' : '🔊');
     }
@@ -4481,8 +5165,10 @@
       isShuffleOn = !isShuffleOn;
       const btn = document.getElementById('btnShuffle');
       const heroBtn = document.getElementById('heroShuffleBtn');
+      const expShuffle = document.getElementById('expShuffleBtn');
       if (btn) btn.classList.toggle('active-toggle', isShuffleOn);
       if (heroBtn) heroBtn.classList.toggle('active-toggle', isShuffleOn);
+      if (expShuffle) expShuffle.classList.toggle('active-mode', isShuffleOn);
       showToast(isShuffleOn ? 'Shuffle Mode: ON 🔀' : 'Shuffle Mode: OFF', '🔀');
     }
 
@@ -4503,6 +5189,7 @@
 
       const btn = document.getElementById('btnRepeat');
       const heroBtn = document.getElementById('heroRepeatBtn');
+      const expBtn = document.getElementById('expRepeatBtn');
       if (btn) {
         btn.textContent = icon;
         btn.classList.toggle('active-toggle', isActive);
@@ -4511,7 +5198,363 @@
         heroBtn.textContent = icon;
         heroBtn.classList.toggle('active-toggle', isActive);
       }
+      if (expBtn) {
+        expBtn.textContent = icon;
+        expBtn.classList.toggle('active-mode', isActive);
+      }
     }
+
+    // ==================== SPOTIFY BOTTOM NAV & EXPANDED PLAYER ====================
+    function switchNavTab(tab) {
+      document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`bnav${tab.charAt(0).toUpperCase() + tab.slice(1)}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (tab === 'home' || tab === 'search') {
+        switchView('search');
+        if (tab === 'search') {
+          const inp = document.getElementById('searchInput');
+          if (inp) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => inp.focus(), 200);
+          }
+        }
+      } else if (tab === 'radio') {
+        switchView('radio');
+      } else if (tab === 'library') {
+        switchView('playlists');
+      }
+    }
+
+    function openExpandedPlayer() {
+      const sheet = document.getElementById('expandedPlayerSheet');
+      if (sheet) sheet.classList.add('sheet-open');
+    }
+
+    function closeExpandedPlayer() {
+      const sheet = document.getElementById('expandedPlayerSheet');
+      if (sheet) sheet.classList.remove('sheet-open');
+    }
+
+    function toggleCurrentSongFavorite() {
+      const song = currentQueue[currentTrackIndex];
+      if (!song) {
+        showToast('No song playing', 'ℹ️');
+        return;
+      }
+      toggleFavorite(song);
+      const btn = document.getElementById('expandedFavBtn');
+      if (btn) btn.textContent = isFavorite(song) ? '❤️' : '🤍';
+    }
+
+    // ==================== DYNAMIC ARTWORK AMBIENT GLOW ====================
+    function updateArtworkAura(artUrl) {
+      if (!artUrl) return;
+      const aura = document.getElementById('ambientGlow');
+      const expGlow = document.getElementById('expandedArtGlow');
+      let hash = 0;
+      for (let i = 0; i < artUrl.length; i++) {
+        hash = (hash << 5) - hash + artUrl.charCodeAt(i);
+        hash |= 0;
+      }
+      const hues = [200, 260, 310, 160, 35, 15, 280, 190];
+      const selectedHue = hues[Math.abs(hash) % hues.length];
+      if (aura) {
+        aura.style.background = `radial-gradient(circle at 50% 30%, hsla(${selectedHue}, 85%, 60%, 0.28) 0%, transparent 70%)`;
+      }
+      if (expGlow) {
+        expGlow.style.background = `radial-gradient(circle, hsla(${selectedHue}, 90%, 65%, 0.45) 0%, transparent 70%)`;
+      }
+    }
+
+    // ==================== 1. SLEEP TIMER ENGINE ====================
+    let sleepTimerInterval = null;
+    let sleepTimerEndTimestamp = null;
+    let isSleepEndSong = false;
+
+    function openSleepTimerModal() {
+      document.getElementById('sleepTimerModal').style.display = 'flex';
+    }
+    function closeSleepTimerModal() {
+      document.getElementById('sleepTimerModal').style.display = 'none';
+    }
+
+    function setSleepTimer(minutes) {
+      cancelSleepTimer(true);
+      if (minutes === 'end') {
+        isSleepEndSong = true;
+        const statusEl = document.getElementById('sleepTimerStatus');
+        if (statusEl) statusEl.textContent = 'Timer set for end of current song 🎵';
+        document.getElementById('dockSleepLabel').textContent = 'End Song';
+        showToast('Sleep timer: Stopping at end of current track 🌙', '🌙');
+        closeSleepTimerModal();
+        return;
+      }
+
+      const ms = minutes * 60 * 1000;
+      sleepTimerEndTimestamp = Date.now() + ms;
+      document.getElementById('dockSleepLabel').textContent = `${minutes}m`;
+      showToast(`Sleep timer set for ${minutes} minutes 🌙`, '🌙');
+
+      sleepTimerInterval = setInterval(() => {
+        const remaining = Math.max(0, Math.round((sleepTimerEndTimestamp - Date.now()) / 1000));
+        const mins = Math.floor(remaining / 60);
+        const secs = (remaining % 60).toString().padStart(2, '0');
+        const statusEl = document.getElementById('sleepTimerStatus');
+        if (statusEl) statusEl.textContent = `Stopping in ${mins}:${secs} 🌙`;
+        if (remaining <= 0) {
+          clearInterval(sleepTimerInterval);
+          fadeAndStopMusic();
+        }
+      }, 1000);
+      closeSleepTimerModal();
+    }
+
+    function cancelSleepTimer(silent = false) {
+      if (sleepTimerInterval) clearInterval(sleepTimerInterval);
+      sleepTimerInterval = null;
+      sleepTimerEndTimestamp = null;
+      isSleepEndSong = false;
+      const statusEl = document.getElementById('sleepTimerStatus');
+      if (statusEl) statusEl.textContent = 'Timer inactive';
+      const label = document.getElementById('dockSleepLabel');
+      if (label) label.textContent = 'Sleep';
+      if (!silent) showToast('Sleep timer turned off', 'ℹ️');
+    }
+
+    function fadeAndStopMusic() {
+      let vol = globalAudio.volume;
+      const fadeInterval = setInterval(() => {
+        vol = Math.max(0, vol - 0.15);
+        globalAudio.volume = vol;
+        if (vol <= 0) {
+          clearInterval(fadeInterval);
+          globalAudio.pause();
+          globalAudio.volume = 1;
+          cancelSleepTimer(true);
+          showToast('Sleep timer finished. Sweet dreams! 🌙', '💤');
+        }
+      }, 400);
+    }
+
+    // ==================== 2. CHILL ATMOSPHERE SOUNDSCAPES ====================
+    let atmoAudioCtx = null;
+    let atmoActiveType = null;
+    let atmoGainNode = null;
+    let atmoSourceNode = null;
+
+    function openAtmosphereModal() {
+      document.getElementById('atmosphereModal').style.display = 'flex';
+    }
+    function closeAtmosphereModal() {
+      document.getElementById('atmosphereModal').style.display = 'none';
+    }
+
+    function initAtmoContext() {
+      if (!atmoAudioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) {
+          atmoAudioCtx = new AC();
+          atmoGainNode = atmoAudioCtx.createGain();
+          atmoGainNode.gain.value = 0.35;
+          atmoGainNode.connect(atmoAudioCtx.destination);
+        }
+      }
+      if (atmoAudioCtx && atmoAudioCtx.state === 'suspended') {
+        atmoAudioCtx.resume().catch(() => {});
+      }
+    }
+
+    function toggleAtmosphere(type) {
+      initAtmoContext();
+      if (atmoActiveType === type) {
+        stopAtmosphere();
+        showToast('Ambiance turned off', 'ℹ️');
+        return;
+      }
+      stopAtmosphere();
+      atmoActiveType = type;
+      document.querySelectorAll('[id^="atmoBtn_"]').forEach(b => b.classList.remove('btn-setting-danger'));
+      const activeBtn = document.getElementById(`atmoBtn_${type}`);
+      if (activeBtn) activeBtn.classList.add('btn-setting-danger');
+
+      startProceduralAtmo(type);
+      showToast(`Ambiance: ${type.toUpperCase()} playing 🌧️`, '✨');
+    }
+
+    function stopAtmosphere() {
+      if (atmoSourceNode) {
+        try { atmoSourceNode.stop(); } catch(e) {}
+        atmoSourceNode = null;
+      }
+      document.querySelectorAll('[id^="atmoBtn_"]').forEach(b => b.classList.remove('btn-setting-danger'));
+      atmoActiveType = null;
+    }
+
+    function startProceduralAtmo(type) {
+      if (!atmoAudioCtx) return;
+      const bufferSize = atmoAudioCtx.sampleRate * 4;
+      const buffer = atmoAudioCtx.createBuffer(1, bufferSize, atmoAudioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        data[i] = (lastOut + (0.02 * white)) / 1.02;
+        lastOut = data[i];
+        data[i] *= 3.5;
+      }
+      const noiseSource = atmoAudioCtx.createBufferSource();
+      noiseSource.buffer = buffer;
+      noiseSource.loop = true;
+
+      const filter = atmoAudioCtx.createBiquadFilter();
+      if (type === 'rain') {
+        filter.type = 'lowpass';
+        filter.frequency.value = 900;
+      } else if (type === 'waves') {
+        filter.type = 'bandpass';
+        filter.frequency.value = 450;
+        filter.Q.value = 0.8;
+      } else if (type === 'fire') {
+        filter.type = 'highpass';
+        filter.frequency.value = 1600;
+      } else {
+        filter.type = 'lowpass';
+        filter.frequency.value = 1100;
+      }
+
+      noiseSource.connect(filter);
+      filter.connect(atmoGainNode);
+      noiseSource.start();
+      atmoSourceNode = noiseSource;
+    }
+
+    function setAtmosphereVolume(val) {
+      const v = parseFloat(val);
+      if (atmoGainNode && atmoAudioCtx) {
+        atmoGainNode.gain.setTargetAtTime(v, atmoAudioCtx.currentTime, 0.05);
+      }
+      const el = document.getElementById('atmoVolDisplay');
+      if (el) el.textContent = `${Math.round(v * 100)}%`;
+    }
+
+    // ==================== 3. STUDIO MORE TOOLS & VOCAL REMOVER ====================
+    let isVocalDampened = false;
+    let isHapticSubOn = false;
+
+    function openMoreToolsModal() {
+      document.getElementById('moreToolsModal').style.display = 'flex';
+    }
+    function closeMoreToolsModal() {
+      document.getElementById('moreToolsModal').style.display = 'none';
+    }
+
+    function toggleVocalDampener() {
+      initWebAudio();
+      isVocalDampened = !isVocalDampened;
+      const btn = document.getElementById('btnVocalMute');
+      if (midFilter) {
+        midFilter.gain.value = isVocalDampened ? -18 : (EQ_PRESETS[currentEqPreset]?.mid || 0);
+      }
+      if (btn) btn.classList.toggle('btn-setting-danger', isVocalDampened);
+      showToast(isVocalDampened ? '🎤 Vocal Muted: Karaoke Instrumental Mode' : 'Original Vocal Restored', '🎤');
+    }
+
+    function toggleHapticSubwoofer() {
+      isHapticSubOn = !isHapticSubOn;
+      const btn = document.getElementById('btnHapticSub');
+      if (btn) btn.classList.toggle('btn-setting-danger', isHapticSubOn);
+      if (isHapticSubOn && navigator.vibrate) navigator.vibrate([30, 20, 30]);
+      showToast(isHapticSubOn ? '📳 Haptic Bass Subwoofer: ON' : 'Haptic Subwoofer: OFF', '📳');
+    }
+
+    function applyViralEffect(mode) {
+      if (mode === 'slowed') {
+        globalAudio.playbackRate = 0.85;
+        showToast('🌙 Slowed + Reverb Vibe Active', '🌙');
+      } else if (mode === 'nightcore') {
+        globalAudio.playbackRate = 1.22;
+        showToast('⚡ Nightcore 1.2x Vibe Active', '⚡');
+      } else {
+        globalAudio.playbackRate = 1.0;
+        showToast('Original Tempo (1.0x)', '🎵');
+      }
+      closeMoreToolsModal();
+    }
+
+    // ==================== 4. 30s RINGTONE CUTTER ====================
+    let ringtoneStartTime = 30;
+
+    function openRingtoneModal() {
+      const song = currentQueue[currentTrackIndex];
+      if (!song) {
+        showToast('Please play a song first', 'ℹ️');
+        return;
+      }
+      const dur = Math.max(60, Math.floor(globalAudio.duration || 180));
+      const slider = document.getElementById('ringtoneSlider');
+      if (slider) {
+        slider.max = Math.max(30, dur - 30);
+        slider.value = Math.min(30, dur - 30);
+      }
+      onRingtoneSliderInput(slider ? slider.value : 30);
+      document.getElementById('ringtoneModal').style.display = 'flex';
+    }
+
+    function closeRingtoneModal() {
+      document.getElementById('ringtoneModal').style.display = 'none';
+    }
+
+    function onRingtoneSliderInput(val) {
+      ringtoneStartTime = parseInt(val, 10) || 0;
+      const startEl = document.getElementById('ringtoneStartVal');
+      const endEl = document.getElementById('ringtoneEndVal');
+      if (startEl) startEl.textContent = formatTime(ringtoneStartTime);
+      if (endEl) endEl.textContent = formatTime(ringtoneStartTime + 30);
+    }
+
+    function previewRingtoneSnippet() {
+      globalAudio.currentTime = ringtoneStartTime;
+      globalAudio.play().catch(() => {});
+      showToast(`Previewing 30s clip from ${formatTime(ringtoneStartTime)}`, '▶️');
+      setTimeout(() => {
+        if (Math.abs(globalAudio.currentTime - (ringtoneStartTime + 30)) < 2) {
+          globalAudio.pause();
+        }
+      }, 30000);
+    }
+
+    function downloadRingtoneSnippet() {
+      const song = currentQueue[currentTrackIndex];
+      if (!song) return;
+      downloadCurrentSong();
+      showToast(`Downloading ringtone for: ${song.title}`, '✂️');
+      closeRingtoneModal();
+    }
+
+    // ==================== 5. MINIMAL DRIVE & GYM MODE ====================
+    function toggleDriveMode() {
+      const overlay = document.getElementById('driveModeOverlay');
+      if (!overlay) return;
+      overlay.classList.toggle('drive-active');
+    }
+
+    let driveTouchStartX = 0;
+    document.addEventListener('touchstart', (e) => {
+      const overlay = document.getElementById('driveModeOverlay');
+      if (overlay && overlay.classList.contains('drive-active')) {
+        driveTouchStartX = e.touches[0].clientX;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      const overlay = document.getElementById('driveModeOverlay');
+      if (overlay && overlay.classList.contains('drive-active')) {
+        const diff = e.changedTouches[0].clientX - driveTouchStartX;
+        if (diff > 80) playPrevSong();
+        else if (diff < -80) playNextSong();
+      }
+    }, { passive: true });
 
     // ==================== RECENTLY PLAYED HISTORY ====================
     function addToRecentlyPlayed(song) {
@@ -4600,6 +5643,25 @@
       document.getElementById('playerArt').src = art;
       document.getElementById('playerTitle').textContent = song.title;
       document.getElementById('playerArtist').textContent = song.artist;
+
+      // 2b. Update Fullscreen Apple Music Player Sheet & Drive Mode
+      const expArt = document.getElementById('expandedArt');
+      const expTitle = document.getElementById('expandedTitle');
+      const expArtist = document.getElementById('expandedArtist');
+      const expPlayBtn = document.getElementById('expPlayBtn');
+      const driveTitle = document.getElementById('driveTitle');
+      const driveArtist = document.getElementById('driveArtist');
+      const drivePlayBtn = document.getElementById('driveGiantPlayBtn');
+      const expFavBtn = document.getElementById('expandedFavBtn');
+      if (expArt) expArt.src = art;
+      if (expTitle) expTitle.textContent = song.title;
+      if (expArtist) expArtist.textContent = song.artist;
+      if (expPlayBtn) expPlayBtn.textContent = '⏸';
+      if (driveTitle) driveTitle.textContent = song.title;
+      if (driveArtist) driveArtist.textContent = song.artist;
+      if (drivePlayBtn) drivePlayBtn.textContent = '⏸';
+      if (expFavBtn) expFavBtn.textContent = isFavorite(song) ? '❤️' : '🤍';
+      updateArtworkAura(art);
 
       // 3. Save to Recently Played
       addToRecentlyPlayed(song);
@@ -4700,10 +5762,15 @@
 
     function togglePlayPause() {
       const heroPlayBtn = document.getElementById('heroPlayPauseBtn');
+      const expPlayBtn = document.getElementById('expPlayBtn');
+      const drivePlayBtn = document.getElementById('driveGiantPlayBtn');
+
       if (globalAudio.paused) {
-        globalAudio.play();
+        globalAudio.play().catch(() => {});
         btnPlayPause.textContent = '⏸';
         if (heroPlayBtn) heroPlayBtn.textContent = '⏸';
+        if (expPlayBtn) expPlayBtn.textContent = '⏸';
+        if (drivePlayBtn) drivePlayBtn.textContent = '⏸';
         if (audioVisualizer) audioVisualizer.classList.add('playing');
         if (!isRemoteSync && jamConnections.length > 0) {
           broadcastJamData({ type: 'PLAY', currentTime: globalAudio.currentTime, sender: jamNickname });
@@ -4712,6 +5779,8 @@
         globalAudio.pause();
         btnPlayPause.textContent = '▶';
         if (heroPlayBtn) heroPlayBtn.textContent = '▶';
+        if (expPlayBtn) expPlayBtn.textContent = '▶';
+        if (drivePlayBtn) drivePlayBtn.textContent = '▶';
         if (audioVisualizer) audioVisualizer.classList.remove('playing');
         if (!isRemoteSync && jamConnections.length > 0) {
           broadcastJamData({ type: 'PAUSE', currentTime: globalAudio.currentTime, sender: jamNickname });
@@ -4748,11 +5817,28 @@
       const cur = globalAudio.currentTime;
       const dur = globalAudio.duration;
       if (dur) {
-        seekSlider.value = (cur / dur) * 100;
+        const pct = (cur / dur) * 100;
+        seekSlider.value = pct;
         currentTimeEl.textContent = formatTime(cur);
         totalDurationEl.textContent = formatTime(dur);
+
+        // Update Mini Floating Pill Progress Bar & Expanded Sheet
+        const miniFill = document.getElementById('miniProgressFill');
+        const expSeek = document.getElementById('expandedSeekSlider');
+        const expCur = document.getElementById('expandedCurrentTime');
+        const expDur = document.getElementById('expandedTotalDuration');
+        if (miniFill) miniFill.style.width = `${pct}%`;
+        if (expSeek) expSeek.value = pct;
+        if (expCur) expCur.textContent = formatTime(cur);
+        if (expDur) expDur.textContent = formatTime(dur);
+
         checkDjCrossfade(cur, dur);
         updateLyricsKaraokeSync(cur, dur);
+
+        // Haptic Bass Pulse on beat drops
+        if (isHapticSubOn && Math.floor(cur * 2) % 4 === 0 && navigator.vibrate) {
+          navigator.vibrate(15);
+        }
 
         // Update Lock-Screen scrub position state in real-time
         if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
@@ -4764,6 +5850,19 @@
             });
           } catch(e) {}
         }
+      }
+    });
+
+    globalAudio.addEventListener('ended', () => {
+      if (isSleepEndSong) {
+        fadeAndStopMusic();
+        return;
+      }
+      if (repeatMode === 'one') {
+        globalAudio.currentTime = 0;
+        globalAudio.play().catch(() => {});
+      } else {
+        playNextSong();
       }
     });
 
@@ -4812,15 +5911,6 @@
         if (mpcAudioCtx && mpcAudioCtx.state === 'suspended') {
           mpcAudioCtx.resume().catch(() => {});
         }
-      }
-    });
-
-    globalAudio.addEventListener('ended', () => {
-      if (repeatMode === 'one') {
-        globalAudio.currentTime = 0;
-        globalAudio.play().catch(() => {});
-      } else {
-        playNextSong();
       }
     });
 
