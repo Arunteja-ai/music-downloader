@@ -47,6 +47,9 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
   <!-- WebRTC for Synchronized Listen Together -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
@@ -3802,17 +3805,33 @@
       suggestTimeout = setTimeout(() => fetchSuggestions(q), 160);
     });
 
+    // Resilient timeout fetcher to avoid frozen searches on flaky mobile connections
+    async function fetchWithTimeout(url, ms = 3200) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), ms);
+      try {
+        const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+        clearTimeout(timer);
+        return response;
+      } catch (err) {
+        clearTimeout(timer);
+        throw err;
+      }
+    }
+
     // Multi-tier resilient search & suggestions API (Vercel, Netlify & Live Mirrors)
     async function apiSuggest(query) {
       const endpoints = [
         `/api/suggest?q=${encodeURIComponent(query)}`,
-        `/.netlify/functions/suggest?q=${encodeURIComponent(query)}`,
+        `https://music-downloader-taupe.vercel.app/api/suggest?q=${encodeURIComponent(query)}`,
+        `https://musicpro-six.vercel.app/api/suggest?q=${encodeURIComponent(query)}`,
         `https://merry-parfait-06fbd9.netlify.app/.netlify/functions/suggest?q=${encodeURIComponent(query)}`,
-        `https://lustrous-scone-848c6b.netlify.app/.netlify/functions/suggest?q=${encodeURIComponent(query)}`
+        `https://lustrous-scone-848c6b.netlify.app/.netlify/functions/suggest?q=${encodeURIComponent(query)}`,
+        `/.netlify/functions/suggest?q=${encodeURIComponent(query)}`
       ];
       for (const url of endpoints) {
         try {
-          const res = await fetch(url);
+          const res = await fetchWithTimeout(url, 2200);
           if (res.ok) {
             const data = await res.json();
             if (data && data.suggestions && data.suggestions.length > 0) {
@@ -3827,14 +3846,16 @@
     async function apiSearch(query) {
       const endpoints = [
         `/api/search?q=${encodeURIComponent(query)}`,
-        `/.netlify/functions/search?q=${encodeURIComponent(query)}`,
+        `https://music-downloader-taupe.vercel.app/api/search?q=${encodeURIComponent(query)}`,
+        `https://musicpro-six.vercel.app/api/search?q=${encodeURIComponent(query)}`,
         `https://merry-parfait-06fbd9.netlify.app/.netlify/functions/search?q=${encodeURIComponent(query)}`,
-        `https://lustrous-scone-848c6b.netlify.app/.netlify/functions/search?q=${encodeURIComponent(query)}`
+        `https://lustrous-scone-848c6b.netlify.app/.netlify/functions/search?q=${encodeURIComponent(query)}`,
+        `/.netlify/functions/search?q=${encodeURIComponent(query)}`
       ];
 
       for (const url of endpoints) {
         try {
-          const res = await fetch(url);
+          const res = await fetchWithTimeout(url, 3500);
           if (res.ok) {
             const data = await res.json();
             const list = data.results || data.songs || [];
@@ -3847,7 +3868,7 @@
 
       // Universal client-side fallback if all serverless endpoints fail
       try {
-        const itunesRes = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=25`);
+        const itunesRes = await fetchWithTimeout(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=25`, 4000);
         if (itunesRes.ok) {
           const itunesData = await itunesRes.json();
           if (itunesData.results && itunesData.results.length > 0) {
@@ -4057,10 +4078,10 @@
                 <img class="song-art" src="${escapeHtml(art)}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2276%22 height=%2276%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23888%22 stroke-width=%222%22><rect width=%2218%22 height=%2218%22 x=%223%22 y=%223%22 rx=%222%22/><circle cx=%2212%22 cy=%2212%22 r=%224%22/></svg>'">
                 <div class="play-overlay">▶</div>
               </div>
-              <div class="song-details">
+              <div class="song-details" onclick="playSongAt(${idx})" style="cursor:pointer;">
                 <div class="title-row">
                   <div class="song-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
-                  <button class="btn-fav ${isFav ? 'active' : ''}" onclick="toggleFavorite(${idx}, this)" title="Favorite">
+                  <button class="btn-fav ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${idx}, this)" title="Favorite">
                     ${isFav ? '❤️' : '🤍'}
                   </button>
                 </div>
@@ -4170,6 +4191,10 @@
     let baseVolumeLevel = 1.0;
     let isSuperBoosted = false;
 
+    // Device detection - preserves native AVPlayer audio session on iOS Safari for lock-screen continuous playback
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
     function initWebAudio() {
       if (audioCtx) return;
       try {
@@ -4208,24 +4233,33 @@
         analyserNode.fftSize = 64; // 32 frequency bins - fast 60fps
         analyserNode.smoothingTimeConstant = 0.82;
 
-        // Source node
-        globalAudio.crossOrigin = 'anonymous';
-        audioSourceNode = audioCtx.createMediaElementSource(globalAudio);
+        // CRITICAL FOR IPHONE / IOS BACKGROUND AUDIO:
+        // On iOS Safari, Web Audio contexts are forcibly muted by Apple when the screen locks or Safari is minimized.
+        // Connecting globalAudio to createMediaElementSource silences audio on lock screen.
+        // Leaving globalAudio unattached lets native Apple AVPlayer & mediaserverd play indefinitely in background!
+        if (!isIOS) {
+          try {
+            globalAudio.crossOrigin = 'anonymous';
+            audioSourceNode = audioCtx.createMediaElementSource(globalAudio);
 
-        // Chain: source -> bass -> mid -> treble -> spatialPanner -> boostGain -> analyser -> destination
-        audioSourceNode.connect(bassFilter);
-        bassFilter.connect(midFilter);
-        midFilter.connect(trebleFilter);
+            // Chain: source -> bass -> mid -> treble -> spatialPanner -> boostGain -> analyser -> destination
+            audioSourceNode.connect(bassFilter);
+            bassFilter.connect(midFilter);
+            midFilter.connect(trebleFilter);
 
-        let lastNode = trebleFilter;
-        if (spatialPannerNode) {
-          lastNode.connect(spatialPannerNode);
-          lastNode = spatialPannerNode;
+            let lastNode = trebleFilter;
+            if (spatialPannerNode) {
+              lastNode.connect(spatialPannerNode);
+              lastNode = spatialPannerNode;
+            }
+
+            lastNode.connect(boostGainNode);
+            boostGainNode.connect(analyserNode);
+            analyserNode.connect(audioCtx.destination);
+          } catch (routingErr) {
+            console.warn('Native audio routing fallback:', routingErr);
+          }
         }
-
-        lastNode.connect(boostGainNode);
-        boostGainNode.connect(analyserNode);
-        analyserNode.connect(audioCtx.destination);
 
         const savedPreset = localStorage.getItem('user_eq_preset') || 'bass';
         applyEqPreset(savedPreset);
@@ -5737,6 +5771,9 @@
         renderRadioStations();
       }
 
+      if (isIOS) {
+        globalAudio.removeAttribute('crossorigin');
+      }
       globalAudio.src = audioUrl;
       const playPromise = globalAudio.play();
       if (playPromise !== undefined) {

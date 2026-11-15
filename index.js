@@ -55,13 +55,13 @@ function handler(req, res) {
     }
   }
 
-  // Fallback serve index.html for all other routes
-  if (!cachedHtml) {
-    cachedHtml = getHtml();
-  }
+  // Serve index.html for all page routes
+  const html = getHtml();
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
-  res.end(cachedHtml);
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.end(html);
 }
 
 module.exports = handler;
