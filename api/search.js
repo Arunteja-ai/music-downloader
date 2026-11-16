@@ -55,6 +55,44 @@ function decodeEntities(str) {
     .replace(/&#(\d+);/g, (m, d) => String.fromCharCode(d));
 }
 
+function getCoreTitle(t) {
+  if (!t) return '';
+  return t
+    .replace(/\s*\|.*$/, '')
+    .replace(/\s*-\s*(?:From|Single|EP|OST|Soundtrack|Remix).*$/i, '')
+    .replace(/\((?:From|Telugu|Hindi|Tamil|Kannada|Malayalam|Film|Official|Full|Lyric|Audio|Original|Soundtrack).*?\)/gi, '')
+    .replace(/\[(?:From|Telugu|Hindi|Tamil|Kannada|Malayalam|Film|Official|Full|Lyric|Audio|Original|Soundtrack).*?\]/gi, '')
+    .trim();
+}
+
+function deduplicateTracks(tracks) {
+  const seen = new Map();
+  const cleaned = [];
+
+  for (const song of tracks) {
+    if (!song || !song.title) continue;
+    const coreT = getCoreTitle(song.title).toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!coreT) continue;
+    const songArtists = (song.artist || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 3);
+
+    let isDup = false;
+    for (const [key, existing] of seen.entries()) {
+      if (existing.coreT === coreT) {
+        const hasSharedArtist = songArtists.some(w => existing.artists.includes(w));
+        if (hasSharedArtist || songArtists.length === 0 || existing.artists.length === 0) {
+          isDup = true;
+          break;
+        }
+      }
+    }
+    if (!isDup) {
+      seen.set(song.id || `${coreT}_${song.artist}`, { coreT, artists: songArtists });
+      cleaned.push(song);
+    }
+  }
+  return cleaned;
+}
+
 async function searchItunesFallback(query) {
   try {
     const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`);
@@ -161,6 +199,10 @@ module.exports = async (req, res) => {
           source: 'JioSaavn 320kbps Akamai CDN'
         });
       }
+    }
+
+    if (results.length > 0) {
+      results = deduplicateTracks(results);
     }
 
     if (results.length === 0) {

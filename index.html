@@ -4477,8 +4477,18 @@
       return doc.body.textContent || str;
     }
 
+    function getCoreTitle(t) {
+      if (!t) return '';
+      return decodeHtmlEntities(t)
+        .replace(/\s*\|.*$/, '')
+        .replace(/\s*-\s*(?:From|Single|EP|OST|Soundtrack|Remix).*$/i, '')
+        .replace(/\((?:From|Telugu|Hindi|Tamil|Kannada|Malayalam|Film|Official|Full|Lyric|Audio|Original|Soundtrack).*?\)/gi, '')
+        .replace(/\[(?:From|Telugu|Hindi|Tamil|Kannada|Malayalam|Film|Official|Full|Lyric|Audio|Original|Soundtrack).*?\]/gi, '')
+        .trim();
+    }
+
     function deduplicateAndCleanTracks(rawList) {
-      const seen = new Set();
+      const seen = new Map();
       const cleaned = [];
 
       for (const song of rawList) {
@@ -4492,13 +4502,24 @@
         song.artist = decodeHtmlEntities(song.artist || 'Unknown Artist').trim();
         song.album = decodeHtmlEntities(song.album || 'Single').trim();
 
-        // Normalization composite key to eliminate duplicates
-        const normTitle = song.title.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const normArtist = song.artist.toLowerCase().split(',')[0].replace(/[^a-z0-9]/g, '');
-        const key = `${normTitle}::${normArtist}`;
+        // Advanced normalization & shared-artist deduplication
+        const coreT = getCoreTitle(song.title).toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (!coreT) continue;
+        const songArtists = song.artist.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 3);
 
-        if (seen.has(key)) continue;
-        seen.add(key);
+        let isDup = false;
+        for (const [key, existing] of seen.entries()) {
+          if (existing.coreT === coreT) {
+            const hasSharedArtist = songArtists.some(w => existing.artists.includes(w));
+            if (hasSharedArtist || songArtists.length === 0 || existing.artists.length === 0) {
+              isDup = true;
+              break;
+            }
+          }
+        }
+        if (isDup) continue;
+
+        seen.set(song.id || `${coreT}_${song.artist}`, { coreT, artists: songArtists });
 
         song.artwork = song.artwork || song.imageHigh || song.imageMed || '';
         song.audioUrl = audioUrl;
@@ -5047,7 +5068,7 @@
         name: '🎧 Telugu DJ Party Non-Stop',
         tag: 'MASS PARTY • 128 BPM',
         desc: 'High-energy DJ mass beats, DSP, Thaman & Anirudh dance remixes.',
-        listeners: '18,420 tuned in',
+        listeners: '18.4k',
         query: 'Telugu DJ remix party mass hits'
       },
       {
@@ -5055,7 +5076,7 @@
         name: '🌙 Late Night Lo-Fi & Chill Beats',
         tag: 'CHILL • MIDNIGHT',
         desc: 'Soothing acoustic Telugu melodies, calm aesthetic slow & reverbed tracks.',
-        listeners: '11,350 tuned in',
+        listeners: '11.3k',
         query: 'Telugu lofi slow chill aesthetic hits'
       },
       {
@@ -5063,7 +5084,7 @@
         name: '⚡ Gym Workout Bass Energy',
         tag: 'HIGH BPM • MASS BEATS',
         desc: 'Heart-pumping mass beats and motivation drops for intense gym workouts.',
-        listeners: '14,890 tuned in',
+        listeners: '14.8k',
         query: 'Telugu mass workout gym bass hits'
       },
       {
@@ -5071,7 +5092,7 @@
         name: '🪔 Bhakti Morning Chants',
         tag: 'SPIRITUAL • PEACE',
         desc: 'Venkateswara Suprabhatam, Lord Shiva stotrams & peaceful morning mantras.',
-        listeners: '24,110 tuned in',
+        listeners: '24.1k',
         query: 'Telugu devotional Venkateswara Shiva stotram songs'
       },
       {
@@ -5079,7 +5100,7 @@
         name: '🎶 90s & 2000s Golden Nostalgia',
         tag: 'EVERGREEN • MELODY',
         desc: 'SPB, Chitra, Ilaiyaraaja, MM Keeravaani & AR Rahman golden classics.',
-        listeners: '16,740 tuned in',
+        listeners: '16.7k',
         query: 'Telugu 90s golden hits SPB Ilaiyaraaja melodies'
       }
     ];
@@ -5222,15 +5243,12 @@
       renderRadioStations();
 
       try {
-        let tracks = await apiSearch(station.query);
+        let rawTracks = await apiSearch(station.query);
+        let tracks = deduplicateAndCleanTracks(rawTracks);
         if (!tracks.length && searchCache.has(station.query)) {
-          tracks = searchCache.get(station.query);
+          tracks = deduplicateAndCleanTracks(searchCache.get(station.query));
         }
         if (tracks.length > 0) {
-          tracks.forEach(s => {
-            s.artwork = s.artwork || s.imageHigh || s.imageMed || '';
-            s.audioUrl = s.audioUrl || s.url320 || s.audioUrl160 || s.url160 || '';
-          });
           currentQueue = tracks;
           playSongAt(0);
           showToast(`📻 Live On Air: ${station.name}`, '🔴');
@@ -6257,6 +6275,7 @@
       const heroPlayBtn = document.getElementById('heroPlayPauseBtn');
       const expPlayBtn = document.getElementById('expPlayBtn');
       const drivePlayBtn = document.getElementById('driveGiantPlayBtn');
+      const expCur = document.getElementById('expandedCurrentTime');
 
       if (state === 'buffering') {
         btnPlayPause.textContent = '⏳';
@@ -6264,25 +6283,32 @@
         if (expPlayBtn) expPlayBtn.textContent = '⏳';
         if (drivePlayBtn) drivePlayBtn.textContent = '⏳';
         if (audioVisualizer) audioVisualizer.classList.remove('playing');
+        currentTimeEl.textContent = 'Buffering...';
+        if (expCur) expCur.textContent = 'Buffering...';
       } else if (state === 'playing') {
         btnPlayPause.textContent = '⏸';
         if (heroPlayBtn) heroPlayBtn.textContent = '⏸';
         if (expPlayBtn) expPlayBtn.textContent = '⏸';
         if (drivePlayBtn) drivePlayBtn.textContent = '⏸';
         if (audioVisualizer) audioVisualizer.classList.add('playing');
+        currentTimeEl.textContent = formatTime(globalAudio.currentTime);
+        if (expCur) expCur.textContent = formatTime(globalAudio.currentTime);
       } else if (state === 'paused') {
         btnPlayPause.textContent = '▶';
         if (heroPlayBtn) heroPlayBtn.textContent = '▶';
         if (expPlayBtn) expPlayBtn.textContent = '▶';
         if (drivePlayBtn) drivePlayBtn.textContent = '▶';
         if (audioVisualizer) audioVisualizer.classList.remove('playing');
+        currentTimeEl.textContent = formatTime(globalAudio.currentTime);
+        if (expCur) expCur.textContent = formatTime(globalAudio.currentTime);
       } else if (state === 'error') {
-        btnPlayPause.textContent = '▶';
-        if (heroPlayBtn) heroPlayBtn.textContent = '▶';
-        if (expPlayBtn) expPlayBtn.textContent = '▶';
-        if (drivePlayBtn) drivePlayBtn.textContent = '▶';
+        btnPlayPause.textContent = '⚠️';
+        if (heroPlayBtn) heroPlayBtn.textContent = '⚠️';
+        if (expPlayBtn) expPlayBtn.textContent = '⚠️';
+        if (drivePlayBtn) drivePlayBtn.textContent = '⚠️';
         if (audioVisualizer) audioVisualizer.classList.remove('playing');
-        currentTimeEl.textContent = '0:00';
+        currentTimeEl.textContent = 'Stream Error';
+        if (expCur) expCur.textContent = 'Stream Error';
       }
     }
 
@@ -6944,6 +6970,7 @@
           artist: song.artist,
           album: song.album || 'Offline Downloads',
           duration: song.duration || '',
+          bitrate: song.bitrate || (song.url320 ? '320kbps' : '160kbps'),
           audioBlob: audioBlob,
           artBlob: artBlob,
           savedAt: Date.now()
@@ -6954,7 +6981,7 @@
         tx.objectStore(OFFLINE_STORE_NAME).put(songRecord);
         const sizeMb = (audioBlob.size / (1024 * 1024)).toFixed(1);
         tx.oncomplete = () => {
-          showToast(`✈️ "${song.title}" (${sizeMb} MB) verified & saved for Airplane Mode!`, '✅');
+          showToast(`✈️ "${song.title}" (${sizeMb} MB • 320kbps) verified & saved for Airplane Mode!`, '✅');
           renderOfflineLibrary();
         };
       } catch (err) {
@@ -6999,7 +7026,9 @@
                   </div>
                   <div style="min-width:0; flex:1;">
                     <div style="font-weight:700; font-size:0.88rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(s.title)}</div>
-                    <div style="font-size:0.75rem; color:#94a3af; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(s.artist)}</div>
+                    <div style="font-size:0.75rem; color:#94a3af; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                      ${escapeHtml(s.artist)} • <span style="color:#10b981; font-weight:700;">✅ Airplane Mode (${s.audioBlob ? (s.audioBlob.size / (1024*1024)).toFixed(1) + ' MB' : 'Saved'})</span>
+                    </div>
                   </div>
                 </div>
                 <div style="display:flex; gap:0.4rem; align-items:center;">
