@@ -54,6 +54,20 @@
   <!-- WebRTC for Synchronized Listen Together -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
+  <!-- Defensive In-App Browser Shield: Prevents injected scripts from throwing on invalid MutationObserver target -->
+  <script>
+    if (typeof window !== 'undefined' && window.MutationObserver) {
+      const _origObserve = MutationObserver.prototype.observe;
+      MutationObserver.prototype.observe = function(target, options) {
+        if (!target || !(target instanceof Node)) {
+          console.warn('Defensive shield: Injected script called MutationObserver.observe with invalid target:', target);
+          return;
+        }
+        return _origObserve.call(this, target, options);
+      };
+    }
+  </script>
+
   <style>
     :root {
       --bg: #090d16;
@@ -2945,8 +2959,8 @@
 
   <header>
     <div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.5rem;">
-      <div class="badge" onclick="openWelcomeTour(true)" style="cursor:pointer;" title="Tap to see Feature Tour">🔥 320KBPS FULL SONGS • ❓ TOUR</div>
-      <div class="badge" onclick="promptInstallApp()" style="cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); border-color:#34d399; color:#fff; font-weight:800; box-shadow:0 0 15px rgba(16,185,129,0.4);" title="Easy 1-Tap Phone Install for Parents & Friends">📲 ADD TO PHONE</div>
+      <button class="badge" onclick="openWelcomeTour(true)" tabindex="0" aria-label="Open Feature Tour" style="cursor:pointer; background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); font-family:inherit;" title="Tap to see Feature Tour">🔥 320KBPS FULL SONGS • ❓ TOUR</button>
+      <button class="badge" onclick="promptInstallApp()" tabindex="0" aria-label="Add app to phone home screen" style="cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); border:1px solid #34d399; color:#fff; font-weight:800; box-shadow:0 0 15px rgba(16,185,129,0.4); font-family:inherit;" title="Easy 1-Tap Phone Install for Parents & Friends">📲 ADD TO PHONE</button>
     </div>
     <h1>Music Downloader Pro</h1>
     <p class="subtitle">Search, stream, create offline playlists & download full 320kbps tracks</p>
@@ -3752,6 +3766,19 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: CREATE NEW PLAYLIST FOLDER (REPLACES PROMPT) ==================== -->
+  <div class="modal-overlay" id="newFolderModal" style="display:none;" onclick="if(event.target===this) closeNewFolderModal()">
+    <div class="modal-box" style="max-width:380px; padding:1.4rem; border-radius:22px; text-align:left;">
+      <div style="font-weight:800; font-size:1.15rem; color:#fff; margin-bottom:0.4rem;">📁 Create New Playlist</div>
+      <div style="font-size:0.8rem; color:#94a3af; margin-bottom:1rem;">Enter a name for your playlist folder:</div>
+      <input type="text" class="modal-input" id="folderNameInput" placeholder="e.g. Roadtrip Beats, Workout, Telugu 2026" maxlength="40" style="margin-bottom:1rem;" />
+      <div style="display:flex; gap:0.6rem; justify-content:flex-end;">
+        <button class="btn-setting-action" onclick="closeNewFolderModal()" style="background:rgba(255,255,255,0.08); color:#94a3af; border:none; padding:0.65rem 1rem; border-radius:12px; font-weight:700;">Cancel</button>
+        <button class="btn-jam-primary" onclick="confirmNewFolderCreation()" style="padding:0.65rem 1.2rem; border-radius:12px; font-weight:800;">Create Playlist ✓</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== MODAL: AUDIO EQUALIZER & MEGA BASS ==================== -->
   <div class="modal-overlay" id="eqModal">
     <div class="modal-box" style="max-width: 460px;">
@@ -4182,6 +4209,59 @@
       Object.keys(pl).forEach(k => total += pl[k].length);
       document.getElementById('totalSavedBadge').textContent = total;
     }
+
+    function isFavorite(song) {
+      if (!song) return false;
+      try {
+        const playlists = getPlaylists();
+        const favList = playlists['Favorites'] || [];
+        const songId = song.id ? String(song.id) : null;
+        const songTitle = (song.title || '').trim().toLowerCase();
+        const songArtist = (song.artist || '').trim().toLowerCase();
+
+        return favList.some(f => {
+          if (songId && f.id && String(f.id) === songId) return true;
+          const fTitle = (f.title || '').trim().toLowerCase();
+          const fArtist = (f.artist || '').trim().toLowerCase();
+          if (fTitle && fTitle === songTitle && (fArtist === songArtist || !fArtist || !songArtist)) return true;
+          return false;
+        });
+      } catch(e) {
+        return false;
+      }
+    }
+
+    let pendingFolderCreationCallback = null;
+    function openNewFolderModal(defaultName, callback) {
+      const modal = document.getElementById('newFolderModal');
+      const input = document.getElementById('folderNameInput');
+      if (!modal || !input) return;
+      input.value = defaultName || '';
+      pendingFolderCreationCallback = callback;
+      modal.style.display = 'flex';
+      setTimeout(() => input.focus(), 100);
+    }
+
+    function closeNewFolderModal() {
+      const modal = document.getElementById('newFolderModal');
+      if (modal) modal.style.display = 'none';
+      pendingFolderCreationCallback = null;
+    }
+
+    function confirmNewFolderCreation() {
+      const input = document.getElementById('folderNameInput');
+      const name = (input ? input.value : '').trim();
+      if (!name) {
+        showToast('Please enter a playlist name', '⚠️');
+        return;
+      }
+      if (pendingFolderCreationCallback) {
+        pendingFolderCreationCallback(name);
+      } else {
+        createPlaylistFolderNamed(name);
+      }
+      closeNewFolderModal();
+    }
     updateTotalSavedBadge();
 
     // Sample Chips
@@ -4429,6 +4509,7 @@
 
     // ==================== VOICE SEARCH ====================
     let recognition = null;
+    let isSpeechActive = false;
     const micBtn = document.getElementById('micBtn');
 
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -4438,28 +4519,57 @@
       recognition.interimResults = false;
 
       recognition.onstart = () => {
+        isSpeechActive = true;
         micBtn.classList.add('listening');
         showToast('Listening... Speak song title', '🎙️');
       };
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        searchInput.value = transcript;
-        searchSongs();
+        isSpeechActive = false;
+        micBtn.classList.remove('listening');
+        if (event.results && event.results[0] && event.results[0][0]) {
+          const transcript = event.results[0][0].transcript;
+          searchInput.value = transcript;
+          searchSongs();
+        }
       };
 
-      recognition.onerror = () => micBtn.classList.remove('listening');
-      recognition.onend = () => micBtn.classList.remove('listening');
+      recognition.onerror = (e) => {
+        isSpeechActive = false;
+        micBtn.classList.remove('listening');
+        console.warn('Voice recognition error:', e);
+        if (e && e.error === 'not-allowed') {
+          showToast('Microphone access blocked. Enable in site settings.', '⚠️');
+        }
+      };
+
+      recognition.onend = () => {
+        isSpeechActive = false;
+        micBtn.classList.remove('listening');
+      };
     } else {
       micBtn.style.display = 'none';
     }
 
     function toggleVoiceSearch() {
       if (!recognition) return;
-      if (micBtn.classList.contains('listening')) {
-        recognition.stop();
+      if (isSpeechActive || micBtn.classList.contains('listening')) {
+        isSpeechActive = false;
+        micBtn.classList.remove('listening');
+        try { recognition.stop(); } catch(e) {
+          try { recognition.abort(); } catch(e2) {}
+        }
+        showToast('Voice search stopped', '🎙️');
       } else {
-        recognition.start();
+        try {
+          isSpeechActive = true;
+          micBtn.classList.add('listening');
+          recognition.start();
+        } catch(err) {
+          console.warn('Voice search start error:', err);
+          isSpeechActive = false;
+          micBtn.classList.remove('listening');
+        }
       }
     }
 
@@ -4532,6 +4642,47 @@
       return cleaned;
     }
 
+    function rankTracks(tracks, query) {
+      if (!query || !tracks || !tracks.length) return tracks || [];
+      const qClean = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
+      const qTokens = qClean.split(/\s+/).filter(w => w.length > 1);
+
+      return tracks.map((track, originalIdx) => {
+        let score = 0;
+        const titleClean = (track.title || '').toLowerCase();
+        const artistClean = (track.artist || '').toLowerCase();
+        const albumClean = (track.album || '').toLowerCase();
+
+        if (titleClean === qClean || titleClean.startsWith(qClean)) {
+          score += 100;
+        } else if (titleClean.includes(qClean)) {
+          score += 60;
+        }
+
+        if (artistClean === qClean || artistClean.includes(qClean)) {
+          score += 80;
+        }
+
+        qTokens.forEach(token => {
+          if (titleClean.includes(token)) score += 25;
+          if (artistClean.includes(token)) score += 20;
+          if (albumClean.includes(token)) score += 5;
+        });
+
+        const isCover = titleClean.includes('cover') || titleClean.includes('karaoke') || titleClean.includes('tribute') || titleClean.includes('piano instrumental');
+        const userWantsCover = qClean.includes('cover') || qClean.includes('karaoke') || qClean.includes('tribute') || qClean.includes('piano');
+        if (isCover && !userWantsCover) {
+          score -= 50;
+        }
+
+        if (track.isFullSong) score += 5;
+
+        return { track, score, originalIdx };
+      })
+      .sort((a, b) => b.score - a.score || a.originalIdx - b.originalIdx)
+      .map(item => item.track);
+    }
+
     async function searchSongs(overrideQuery) {
       hideSuggestions();
       const rawQuery = overrideQuery || searchInput.value.trim();
@@ -4567,12 +4718,22 @@
 
       try {
         const rawResults = await apiSearch(query);
-        const results = deduplicateAndCleanTracks(rawResults);
+        let results = deduplicateAndCleanTracks(rawResults);
+        results = rankTracks(results, rawQuery);
 
-        if (!results.length) {
+        if (!results || !results.length) {
           resultsContainer.innerHTML = `
-            <div class="status-msg">
-              <p>❌ No full songs found for "<strong>${escapeHtml(rawQuery)}</strong>". Try checking the spelling.</p>
+            <div class="empty-results-box" style="text-align:center; padding:3rem 1.2rem; background:rgba(255,255,255,0.02); border-radius:20px; border:1px dashed rgba(255,255,255,0.1); margin:1.2rem 0;">
+              <div style="font-size:3rem; margin-bottom:0.7rem;">🔍</div>
+              <div style="font-size:1.15rem; font-weight:800; color:#fff; margin-bottom:0.4rem;">No matching songs found</div>
+              <div style="font-size:0.85rem; color:#94a3af; max-width:320px; margin:0 auto 1.4rem; line-height:1.45;">
+                We couldn't find any songs matching "<strong>${escapeHtml(rawQuery)}</strong>". Check the spelling or explore popular hits:
+              </div>
+              <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+                <button class="btn-action-pill" onclick="searchSongs('Naatu Naatu')">⚡ Naatu Naatu</button>
+                <button class="btn-action-pill" onclick="searchSongs('Coldplay Yellow')">🎸 Coldplay Yellow</button>
+                <button class="btn-action-pill" onclick="searchSongs('Telugu Trending')">🔥 Telugu Hits</button>
+              </div>
             </div>
           `;
           return;
@@ -4592,6 +4753,24 @@
     }
 
     function renderResults(songs) {
+      if (!songs || !songs.length) {
+        resultsContainer.innerHTML = `
+          <div class="empty-results-box" style="text-align:center; padding:3rem 1.2rem; background:rgba(255,255,255,0.02); border-radius:20px; border:1px dashed rgba(255,255,255,0.1); margin:1.2rem 0;">
+            <div style="font-size:3rem; margin-bottom:0.7rem;">🔍</div>
+            <div style="font-size:1.15rem; font-weight:800; color:#fff; margin-bottom:0.4rem;">No matching songs found</div>
+            <div style="font-size:0.85rem; color:#94a3af; max-width:320px; margin:0 auto 1.4rem; line-height:1.45;">
+              We couldn't find any songs matching "<strong>${escapeHtml(currentSearchedQuery || 'your query')}</strong>".
+            </div>
+            <div style="display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap;">
+              <button class="btn-action-pill" onclick="searchSongs('Naatu Naatu')">⚡ Naatu Naatu</button>
+              <button class="btn-action-pill" onclick="searchSongs('Coldplay Yellow')">🎸 Coldplay Yellow</button>
+              <button class="btn-action-pill" onclick="searchSongs('Telugu Trending')">🔥 Telugu Hits</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
       const playlists = getPlaylists();
       const favList = playlists['Favorites'] || [];
       const favSet = new Set(favList.map(s => s.id || s.title));
@@ -4622,11 +4801,11 @@
         html += `
           <div class="song-card">
             <div class="song-header">
-              <div class="art-wrapper" onclick="playSongAt(${idx})">
+              <div class="art-wrapper" onclick="playSongAt(${idx})" tabindex="0" role="button" aria-label="Play ${escapeHtml(title)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();playSongAt(${idx});}">
                 <img class="song-art" src="${escapeHtml(art)}" alt="${escapeHtml(title)}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2276%22 height=%2276%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23888%22 stroke-width=%222%22><rect width=%2218%22 height=%2218%22 x=%223%22 y=%223%22 rx=%222%22/><circle cx=%2212%22 cy=%2212%22 r=%224%22/></svg>'">
                 <div class="play-overlay">▶</div>
               </div>
-              <div class="song-details" onclick="playSongAt(${idx})" style="cursor:pointer;">
+              <div class="song-details" onclick="playSongAt(${idx})" tabindex="0" role="button" aria-label="Play ${escapeHtml(title)} by ${escapeHtml(artist)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();playSongAt(${idx});}" style="cursor:pointer;">
                 <div class="song-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
                 <div class="song-artist" title="${escapeHtml(artist)}">${escapeHtml(artist)}</div>
                 <div class="song-meta">
@@ -4664,10 +4843,29 @@
       }
       const defaultName = currentSearchedQuery 
         ? `${currentSearchedQuery}` 
-        : 'Telugu DJ Mix';
+        : 'My Playlist';
 
-      const folderName = prompt('Enter a name for your new playlist folder:', defaultName);
-      if (!folderName || !folderName.trim()) return;
+      openNewFolderModal(defaultName, (folderName) => {
+        const trimmedName = folderName.trim();
+        const playlists = getPlaylists();
+        if (!playlists[trimmedName]) {
+          playlists[trimmedName] = [];
+        }
+
+        let addedCount = 0;
+        currentQueue.forEach(song => {
+          const exists = playlists[trimmedName].some(s => s.id === song.id || s.title === song.title);
+          if (!exists) {
+            playlists[trimmedName].push(song);
+            addedCount++;
+          }
+        });
+
+        savePlaylists(playlists);
+        selectedFolder = trimmedName;
+        showToast(`Created "${trimmedName}" with ${addedCount} songs! 📁`, '🎉');
+      });
+    }
 
       const trimmedName = folderName.trim();
       const playlists = getPlaylists();
@@ -6349,24 +6547,38 @@
       document.getElementById('playerArtist').textContent = song.artist;
 
       // 2b. Update Fullscreen Apple Music Player Sheet & Drive Mode
-      const expArt = document.getElementById('expandedArt');
-      const expTitle = document.getElementById('expandedTitle');
-      const expArtist = document.getElementById('expandedArtist');
-      const driveTitle = document.getElementById('driveTitle');
-      const driveArtist = document.getElementById('driveArtist');
-      const expFavBtn = document.getElementById('expandedFavBtn');
-      if (expArt) expArt.src = art;
-      if (expTitle) expTitle.textContent = song.title;
-      if (expArtist) expArtist.textContent = song.artist;
-      if (driveTitle) driveTitle.textContent = song.title;
-      if (driveArtist) driveArtist.textContent = song.artist;
-      const driveArt = document.getElementById('driveArt');
-      if (driveArt) driveArt.src = art;
-      if (expFavBtn) expFavBtn.textContent = isFavorite(song) ? '❤️' : '🤍';
-      updateArtworkAura(art);
+      try {
+        const expArt = document.getElementById('expandedArt');
+        const expTitle = document.getElementById('expandedTitle');
+        const expArtist = document.getElementById('expandedArtist');
+        const driveTitle = document.getElementById('driveTitle');
+        const driveArtist = document.getElementById('driveArtist');
+        const expFavBtn = document.getElementById('expandedFavBtn');
+        if (expArt) expArt.src = art;
+        if (expTitle) expTitle.textContent = song.title;
+        if (expArtist) expArtist.textContent = song.artist;
+        if (driveTitle) driveTitle.textContent = song.title;
+        if (driveArtist) driveArtist.textContent = song.artist;
+        const driveArt = document.getElementById('driveArt');
+        if (driveArt) driveArt.src = art;
+        if (expFavBtn) expFavBtn.textContent = isFavorite(song) ? '❤️' : '🤍';
+        updateArtworkAura(art);
+      } catch(e) {
+        console.warn('Error updating player sheet UI:', e);
+      }
 
       // Set playback UI to buffering state while network loads audio chunk
       setPlaybackUIState('buffering');
+
+      // Clear previous loading watchdog
+      if (window._audioBufferWatchdog) clearTimeout(window._audioBufferWatchdog);
+      window._audioBufferWatchdog = setTimeout(() => {
+        if (globalAudio.paused && globalAudio.currentTime === 0 && !globalAudio.ended) {
+          console.warn('Audio buffer watchdog timed out after 6s');
+          setPlaybackUIState('paused');
+          showToast('Tap play to start audio stream', 'ℹ️');
+        }
+      }, 6000);
 
       // 3. Save to Recently Played
       addToRecentlyPlayed(song);
@@ -6463,6 +6675,16 @@
 
     // Auto-fallback if audio error occurs
     function togglePlayPause() {
+      if (!globalAudio.src || !currentQueue[currentTrackIndex]) {
+        if (currentQueue && currentQueue.length > 0) {
+          playSongAt(0);
+          return;
+        }
+        showToast('Please search and select a song first! 🎵', 'ℹ️');
+        setPlaybackUIState('paused');
+        return;
+      }
+
       if (globalAudio.paused) {
         setPlaybackUIState('buffering');
         const playPromise = globalAudio.play();
@@ -6491,6 +6713,7 @@
     });
 
     globalAudio.addEventListener('playing', () => {
+      if (window._audioBufferWatchdog) clearTimeout(window._audioBufferWatchdog);
       setPlaybackUIState('playing');
       if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = 'playing';
@@ -6878,7 +7101,10 @@
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 22px sans-serif';
-        ctx.fillText('musicpro-six.vercel.app', 360, 1100);
+        const currentDomain = (typeof window !== 'undefined' && window.location && window.location.host) 
+          ? window.location.host 
+          : 'musicpro-six.vercel.app';
+        ctx.fillText(currentDomain, 360, 1100);
       }
 
       function drawRoundRect(c, x, y, width, height, radius) {
@@ -7334,17 +7560,18 @@
     }
 
     function openCreatePlaylistModal() {
-      const name = prompt('Enter new playlist folder name:');
-      if (name && name.trim()) {
+      openNewFolderModal('', (trimmed) => {
         const playlists = getPlaylists();
-        if (!playlists[name.trim()]) {
-          playlists[name.trim()] = [];
+        if (!playlists[trimmed]) {
+          playlists[trimmed] = [];
           savePlaylists(playlists);
-          selectedFolder = name.trim();
+          selectedFolder = trimmed;
           renderPlaylistsView();
-          showToast(`Created folder "${name.trim()}"`, '📁');
+          showToast(`Created folder "${trimmed}"`, '📁');
+        } else {
+          showToast(`Folder "${trimmed}" already exists`, 'ℹ️');
         }
-      }
+      });
     }
 
     function closeModal() {

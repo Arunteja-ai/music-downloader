@@ -92,6 +92,47 @@ function deduplicateTracks(tracks) {
   return cleaned;
 }
 
+function rankTracks(tracks, query) {
+  if (!query || !tracks.length) return tracks;
+  const qClean = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
+  const qTokens = qClean.split(/\s+/).filter(w => w.length > 1);
+
+  return tracks.map((track, originalIdx) => {
+    let score = 0;
+    const titleClean = (track.title || '').toLowerCase();
+    const artistClean = (track.artist || '').toLowerCase();
+    const albumClean = (track.album || '').toLowerCase();
+
+    if (titleClean === qClean || titleClean.startsWith(qClean)) {
+      score += 100;
+    } else if (titleClean.includes(qClean)) {
+      score += 60;
+    }
+
+    if (artistClean === qClean || artistClean.includes(qClean)) {
+      score += 80;
+    }
+
+    qTokens.forEach(token => {
+      if (titleClean.includes(token)) score += 25;
+      if (artistClean.includes(token)) score += 20;
+      if (albumClean.includes(token)) score += 5;
+    });
+
+    const isCover = titleClean.includes('cover') || titleClean.includes('karaoke') || titleClean.includes('tribute') || titleClean.includes('piano instrumental');
+    const userWantsCover = qClean.includes('cover') || qClean.includes('karaoke') || qClean.includes('tribute') || qClean.includes('piano');
+    if (isCover && !userWantsCover) {
+      score -= 50;
+    }
+
+    if (track.isFullSong) score += 5;
+
+    return { track, score, originalIdx };
+  })
+  .sort((a, b) => b.score - a.score || a.originalIdx - b.originalIdx)
+  .map(item => item.track);
+}
+
 async function searchItunesFallback(query) {
   try {
     const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`);
@@ -202,13 +243,33 @@ exports.handler = async (event, context) => {
       }
     }
 
+    const qWords = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 2);
+    const hasArtistInResults = results.some(r => {
+      const art = (r.artist || '').toLowerCase();
+      return qWords.some(w => art.includes(w));
+    });
+
+    const isCoverOrKaraokeHeavy = results.length > 0 && results.every(r => {
+      const t = (r.title || '').toLowerCase();
+      return t.includes('cover') || t.includes('karaoke') || t.includes('tribute') || t.includes('instrumental') || t.includes('piano');
+    });
+
+    if (!hasArtistInResults || isCoverOrKaraokeHeavy || results.length === 0) {
+      try {
+        const itunesTracks = await searchItunesFallback(query);
+        if (itunesTracks.length > 0) {
+          results = [...itunesTracks, ...results];
+        }
+      } catch(e) {}
+    }
+
     if (results.length > 0) {
       results = deduplicateTracks(results);
+      results = rankTracks(results, query);
     }
 
     if (results.length === 0) {
-      const fallback = await searchItunesFallback(query);
-      const payload = { results: fallback, fallback: true };
+      const payload = { results: [], fallback: false };
       setCache(cacheKey, payload);
       return { statusCode: 200, headers: { ...headers, 'X-Edge-Cache': 'MISS' }, body: JSON.stringify(payload) };
     }
