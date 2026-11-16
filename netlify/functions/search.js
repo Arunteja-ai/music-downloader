@@ -92,16 +92,29 @@ function deduplicateTracks(tracks) {
   return cleaned;
 }
 
+const CATEGORY_DISCOVERY_WORDS = new Set([
+  'telugu', 'tamil', 'hindi', 'english', 'punjabi', 'malayalam', 'kannada',
+  'bhojpuri', 'bengali', 'marathi', 'gujarati',
+  'song', 'songs', 'hit', 'hits', 'dj', 'remix', 'mix', 'mashup',
+  'party', 'dance', 'mass', 'beat', 'beats', 'bass',
+  'love', 'romantic', 'romance', 'sad', 'melody', 'melodies',
+  'trending', 'viral', 'top', 'best', 'latest', 'new', 'all'
+]);
+
 function rankTracks(tracks, query) {
   if (!query || !tracks.length) return tracks;
   const qClean = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
   const qTokens = qClean.split(/\s+/).filter(w => w.length > 1);
 
-  const validTracks = tracks.filter(t => {
-    if (!qTokens.length) return true;
-    const text = ((t.title || '') + ' ' + (t.artist || '') + ' ' + (t.album || '')).toLowerCase();
-    return qTokens.some(token => text.includes(token));
-  });
+  const isCategoryQuery = qTokens.some(token => CATEGORY_DISCOVERY_WORDS.has(token));
+
+  let validTracks = tracks;
+  if (!isCategoryQuery && qTokens.length > 0) {
+    validTracks = tracks.filter(t => {
+      const text = ((t.title || '') + ' ' + (t.artist || '') + ' ' + (t.album || '') + ' ' + (t.language || '')).toLowerCase();
+      return qTokens.some(token => text.includes(token));
+    });
+  }
 
   if (validTracks.length === 0) return [];
 
@@ -133,7 +146,7 @@ function rankTracks(tracks, query) {
       score -= 100;
     }
 
-    if (track.isFullSong) score += 5;
+    if (track.isFullSong) score += 20;
 
     return { track, score, originalIdx };
   })
@@ -234,6 +247,7 @@ exports.handler = async (event, context) => {
           artist: decodeEntities(song.primary_artists || song.singers || song.music || ''),
           album: decodeEntities(song.album),
           year: song.year,
+          language: song.language || '',
           duration: durSec ? `${mins}:${secs}` : 'Full Song',
           durationSec: durSec,
           imageHigh,
@@ -262,7 +276,10 @@ exports.handler = async (event, context) => {
       return t.includes('cover') || t.includes('karaoke') || t.includes('tribute') || t.includes('instrumental') || t.includes('piano');
     });
 
-    if (!hasArtistInResults || isCoverOrKaraokeHeavy || results.length === 0) {
+    const isCategoryQuery = qWords.some(w => CATEGORY_DISCOVERY_WORDS.has(w));
+    const shouldCheckItunes = (results.length === 0) || isCoverOrKaraokeHeavy || (!isCategoryQuery && !hasArtistInResults && results.length < 5);
+
+    if (shouldCheckItunes) {
       try {
         const itunesTracks = await searchItunesFallback(query);
         if (itunesTracks.length > 0) {
