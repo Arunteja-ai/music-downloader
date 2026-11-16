@@ -2833,6 +2833,94 @@
         display: none;
       }
     }
+
+    /* ==================== 1-TAP SOUND FX PILLS ==================== */
+    .exp-fx-pills {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding: 0.5rem 0.2rem;
+      margin: 0.4rem 0 0.8rem 0;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .exp-fx-pills::-webkit-scrollbar { display: none; }
+    .fx-pill {
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #e2e8f0;
+      padding: 0.42rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      user-select: none;
+    }
+    .fx-pill:hover, .fx-pill:active {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(56, 189, 248, 0.6);
+      color: #fff;
+    }
+    .fx-pill.active {
+      background: linear-gradient(135deg, #0ea5e9, #8b5cf6) !important;
+      border-color: #38bdf8 !important;
+      color: #fff !important;
+      box-shadow: 0 0 16px rgba(14, 165, 233, 0.5);
+    }
+
+    /* WhatsApp In-App Webview Notice */
+    .whatsapp-notice {
+      background: linear-gradient(90deg, #15803d, #16a34a);
+      color: #ffffff;
+      padding: 0.65rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* iOS & Android Easy Install Step Cards */
+    .ios-step-card {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 0.65rem;
+      text-align: left;
+    }
+    .ios-step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #0ea5e9;
+      color: #000;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.95rem;
+    }
+    .ios-step-content {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      line-height: 1.35;
+    }
+    .ios-step-content strong {
+      color: #38bdf8;
+    }
   </style>
 </head>
 <body>
@@ -2843,14 +2931,23 @@
   <!-- Toast Notification -->
   <div id="toast"></div>
 
+  <!-- WhatsApp In-App Webview Notice (Automatic Detection) -->
+  <div id="whatsappNotice" class="whatsapp-notice" style="display:none;">
+    <span>💡 For background lock-screen music: Tap <strong>•••</strong> &rarr; <strong>Open in Chrome / Safari</strong></span>
+    <button onclick="document.getElementById('whatsappNotice').style.display='none'" style="background:none; border:none; color:#fff; font-size:1.1rem; cursor:pointer;">✕</button>
+  </div>
+
   <!-- PWA Install Banner -->
   <div id="installBanner">
-    <span>📲 Install as App on Your Phone</span>
-    <button id="installBtn">Add to Home Screen</button>
+    <span>📲 Install Music Pro on Your Phone</span>
+    <button id="installBtn" onclick="promptInstallApp()">Add to Home Screen</button>
   </div>
 
   <header>
-    <div class="badge" onclick="openWelcomeTour(true)" style="cursor:pointer;" title="Tap to see Feature Tour">🔥 320KBPS FULL SONGS • ❓ TOUR & GUIDE</div>
+    <div style="display:flex; justify-content:center; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.5rem;">
+      <div class="badge" onclick="openWelcomeTour(true)" style="cursor:pointer;" title="Tap to see Feature Tour">🔥 320KBPS FULL SONGS • ❓ TOUR</div>
+      <div class="badge" onclick="promptInstallApp()" style="cursor:pointer; background:linear-gradient(135deg, #10b981, #059669); border-color:#34d399; color:#fff; font-weight:800; box-shadow:0 0 15px rgba(16,185,129,0.4);" title="Easy 1-Tap Phone Install for Parents & Friends">📲 ADD TO PHONE</div>
+    </div>
     <h1>Music Downloader Pro</h1>
     <p class="subtitle">Search, stream, create offline playlists & download full 320kbps tracks</p>
   </header>
@@ -3211,11 +3308,28 @@
       <button class="btn-super-boost" id="expSuperBoostBtn" onclick="toggleSuperBoost()">🚀 200%</button>
     </div>
 
+    <!-- Quick Sound FX Presets (1-Tap Transformations) -->
+    <div class="exp-fx-pills" id="expFxPills">
+      <button class="fx-pill" id="pillFxOrbit" onclick="toggleQuickPreset('orbit')">🪐 8D Audio</button>
+      <button class="fx-pill" id="pillFxBass" onclick="toggleQuickPreset('bass')">🔊 Bass 2.0</button>
+      <button class="fx-pill" id="pillFxSlowed" onclick="toggleQuickPreset('slowed')">🌙 Slowed</button>
+      <button class="fx-pill" id="pillFxNightcore" onclick="toggleQuickPreset('nightcore')">⚡ Nightcore</button>
+      <button class="fx-pill active" id="pillFxInfinity" onclick="toggleInfinityAutoplay()">♾️ Autoplay: ON</button>
+    </div>
+
     <!-- Quick Action Bar -->
     <div class="expanded-actions-dock">
       <button class="exp-dock-btn" onclick="openStoryCardModal()" title="Create WhatsApp / Instagram Story Image">
         <span class="dock-icon">📸</span>
         <span class="dock-label">Story Card</span>
+      </button>
+      <button class="exp-dock-btn" onclick="openCurrentSongQr()" title="Instant Scan-to-Play QR Code for Friends">
+        <span class="dock-icon">📱</span>
+        <span class="dock-label">QR Code</span>
+      </button>
+      <button class="exp-dock-btn" onclick="toggleDriveMode()" title="Safe Big-Button Driving Mode">
+        <span class="dock-icon">🚗</span>
+        <span class="dock-label">Car Mode</span>
       </button>
       <button class="exp-dock-btn" onclick="shareCurrentSong()" title="Share Direct Song Link to WhatsApp">
         <span class="dock-icon">🔗</span>
@@ -3376,6 +3490,22 @@
           </div>
         </button>
 
+        <button class="opt-menu-item" onclick="optActionQrCode()">
+          <span class="opt-icon">📱</span>
+          <div class="opt-text">
+            <div class="opt-label">Show Scan-to-Play QR</div>
+            <div class="opt-sub">Instant camera scan for friends</div>
+          </div>
+        </button>
+
+        <button class="opt-menu-item" onclick="optActionDriveMode()">
+          <span class="opt-icon">🚗</span>
+          <div class="opt-text">
+            <div class="opt-label">Car / Driving HUD</div>
+            <div class="opt-sub">Giant buttons & safe driving view</div>
+          </div>
+        </button>
+
         <button class="opt-menu-item" onclick="optActionShare()">
           <span class="opt-icon">🔗</span>
           <div class="opt-text">
@@ -3520,21 +3650,83 @@
     </div>
   </div>
 
-  <!-- ==================== MINIMAL DRIVE MODE OVERLAY ==================== -->
+  <!-- ==================== MINIMAL DRIVE & CAR HUD MODE OVERLAY ==================== -->
   <div class="drive-mode-overlay" id="driveModeOverlay">
     <div class="drive-top-bar">
-      <div style="font-weight:900; letter-spacing:1px; color:#64748b; font-size:0.85rem;">🏎️ DRIVE & GYM MODE</div>
-      <button class="btn-setting-action" onclick="toggleDriveMode()">✕ Exit Drive Mode</button>
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-size:1.2rem;">🚗</span>
+        <span style="font-weight:900; letter-spacing:1px; color:#38bdf8; font-size:0.9rem;">CAR HUD MODE</span>
+      </div>
+      <div id="driveClock" style="font-size:1.25rem; font-weight:900; color:#fff; font-family:monospace; letter-spacing:1px;">--:--:--</div>
+      <button class="btn-setting-action" onclick="toggleDriveMode()" style="padding:0.4rem 0.85rem; font-size:0.85rem; background:rgba(239,68,68,0.2); color:#f87171; border:1px solid rgba(239,68,68,0.4); border-radius:10px;">✕ Exit</button>
     </div>
-    <div style="text-align:center;">
-      <div class="drive-title" id="driveTitle">Song Title</div>
-      <div class="drive-artist" id="driveArtist">Artist Name</div>
+
+    <div style="text-align:center; margin: auto 0;">
+      <img id="driveArt" src="" alt="Album Artwork" style="width:160px; height:160px; border-radius:24px; object-fit:cover; margin:0 auto 1rem auto; display:block; box-shadow:0 0 45px rgba(56,189,248,0.35); border:2px solid rgba(255,255,255,0.18);" onerror="this.src=''" />
+      <div class="drive-title" id="driveTitle" style="font-size:1.9rem; font-weight:900; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90vw; margin:0 auto;">Select a Song</div>
+      <div class="drive-artist" id="driveArtist" style="font-size:1.15rem; font-weight:700; color:#38bdf8; margin-top:0.4rem;">Music Pro</div>
     </div>
-    <button class="drive-giant-btn" id="driveGiantPlayBtn" onclick="togglePlayPause()">▶</button>
-    <div style="display:flex; justify-content:space-around; align-items:center;">
-      <button class="ctrl-btn" style="font-size:2.8rem;" onclick="playPrevSong()">⏮️</button>
-      <div style="color:#64748b; font-size:0.85rem; font-weight:700;">Swipe left/right to skip</div>
-      <button class="ctrl-btn" style="font-size:2.8rem;" onclick="playNextSong()">⏭️</button>
+
+    <!-- Giant Media Controls -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:1.8rem; margin-bottom:1.2rem;">
+      <button class="ctrl-btn" style="font-size:2.8rem; width:76px; height:76px; background:rgba(255,255,255,0.1); border-radius:50%; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center;" onclick="playPrevSong()" title="Previous Track">⏮️</button>
+      <button class="drive-giant-btn" id="driveGiantPlayBtn" onclick="togglePlayPause()" title="Play/Pause">▶</button>
+      <button class="ctrl-btn" style="font-size:2.8rem; width:76px; height:76px; background:rgba(255,255,255,0.1); border-radius:50%; border:1px solid rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center;" onclick="playNextSong()" title="Next Track">⏭️</button>
+    </div>
+
+    <!-- Volume & Tap Tip Bar -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.55rem 1rem; background:rgba(255,255,255,0.06); border-radius:16px;">
+      <button onclick="setPlayerVolume(Math.max(0, globalAudio.volume - 0.2))" style="background:none; border:none; color:#94a3af; font-size:1.15rem; font-weight:900; padding:0.4rem 0.8rem; cursor:pointer;">🔉 Vol -</button>
+      <div style="color:#64748b; font-size:0.78rem; font-weight:700; text-align:center;">Swipe screen to skip tracks</div>
+      <button onclick="setPlayerVolume(Math.min(1, globalAudio.volume + 0.2))" style="background:none; border:none; color:#38bdf8; font-size:1.15rem; font-weight:900; padding:0.4rem 0.8rem; cursor:pointer;">🔊 Vol +</button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: SCAN TO PLAY QR CODE ==================== -->
+  <div class="modal-overlay" id="qrCodeModal" style="display:none;" onclick="if(event.target===this) closeQrModal()">
+    <div class="modal-box" style="max-width: 380px; text-align: center; border-radius: 24px; padding: 1.5rem;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <span style="font-size:1.1rem; font-weight:800; color:#fff;">📱 Scan &amp; Listen Instantly</span>
+        <button class="btn-close-modal" onclick="closeQrModal()">✕</button>
+      </div>
+      
+      <p style="font-size:0.82rem; color:#94a3af; margin-bottom:1rem; line-height:1.4;">
+        Point any iPhone or Android camera to start playing this track on your friend's phone immediately!
+      </p>
+
+      <div style="background:#fff; border-radius:20px; padding:0.9rem; display:inline-block; margin:0 auto; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+        <img id="qrCodeImg" src="" style="width:200px; height:200px; display:block; border-radius:8px;" alt="Scan to Play QR" />
+      </div>
+
+      <div style="margin-top:0.9rem; font-weight:800; font-size:1.02rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="qrSongTitle">Song Title</div>
+      <div style="font-size:0.82rem; color:#38bdf8; margin-bottom:1.1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="qrSongArtist">Artist</div>
+
+      <div style="display:flex; gap:0.6rem;">
+        <button class="btn-setting-action" onclick="copyQrSongLink()" style="flex:1; background:#0ea5e9; color:#fff; font-weight:700; border-radius:12px; padding:0.65rem;">📋 Copy Link</button>
+        <button class="btn-setting-action" onclick="shareQrSongWhatsApp()" style="flex:1; background:#25D366; color:#fff; font-weight:700; border-radius:12px; padding:0.65rem;">💬 WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: EASY PHONE INSTALL GUIDE (PARENTS / ELDERS) ==================== -->
+  <div class="modal-overlay" id="iosInstallModal" style="display:none;" onclick="if(event.target===this) closeIosInstallModal()">
+    <div class="modal-box" style="max-width: 420px; text-align: center; border-radius: 24px; padding: 1.5rem;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <span id="installModalHeader" style="font-size:1.1rem; font-weight:800; color:#fff;">📲 Add Music Pro to Phone</span>
+        <button class="btn-close-modal" onclick="closeIosInstallModal()">✕</button>
+      </div>
+
+      <p style="font-size:0.86rem; color:#94a3af; margin-bottom:1.1rem; line-height:1.4;" id="installModalSubtitle">
+        Follow these 3 simple steps to add Music Pro directly to your home screen with its own app icon:
+      </p>
+
+      <div id="installStepsContainer">
+        <!-- Will be populated dynamically based on iOS or Android -->
+      </div>
+
+      <button class="btn-setting-action" onclick="closeIosInstallModal()" style="width:100%; margin-top:0.8rem; background:#0ea5e9; color:#fff; font-weight:800; padding:0.75rem; border:none; border-radius:12px; font-size:0.95rem;">
+        Got It! 👍
+      </button>
     </div>
   </div>
 
@@ -4182,15 +4374,42 @@
     }
 
     function renderSuggestions(list) {
-      suggestionsBox.innerHTML = list.map(item => `
-        <div class="suggestion-item" onclick="selectSuggestion('${escapeJsString(item.title)}')">
-          <img class="sugg-art" src="${escapeHtml(item.image)}" alt="" onerror="this.style.display='none'" />
+      if (!suggestionsBox) return;
+      suggestionsBox.innerHTML = '';
+      if (!list || list.length === 0) {
+        hideSuggestions();
+        return;
+      }
+      list.forEach(item => {
+        const title = item.title || '';
+        const desc = item.description || '';
+        const img = item.image || '';
+
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.setAttribute('role', 'button');
+        div.setAttribute('tabindex', '0');
+        div.innerHTML = `
+          <img class="sugg-art" src="${escapeHtml(img)}" alt="" onerror="this.style.display='none'" />
           <div class="sugg-info">
-            <div class="sugg-title">${escapeHtml(item.title)}</div>
-            <div class="sugg-desc">${escapeHtml(item.description)}</div>
+            <div class="sugg-title">${escapeHtml(title)}</div>
+            <div class="sugg-desc">${escapeHtml(desc)}</div>
           </div>
-        </div>
-      `).join('');
+        `;
+
+        // Support both pointerdown (instant mobile touch before keyboard hide) and click
+        const handleSelect = (e) => {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          selectSuggestion(title);
+        };
+
+        div.addEventListener('pointerdown', handleSelect);
+        div.addEventListener('click', handleSelect);
+        suggestionsBox.appendChild(div);
+      });
       suggestionsBox.style.display = 'block';
     }
 
@@ -6025,6 +6244,8 @@
       if (driveTitle) driveTitle.textContent = song.title;
       if (driveArtist) driveArtist.textContent = song.artist;
       if (drivePlayBtn) drivePlayBtn.textContent = '⏸';
+      const driveArt = document.getElementById('driveArt');
+      if (driveArt) driveArt.src = art;
       if (expFavBtn) expFavBtn.textContent = isFavorite(song) ? '❤️' : '🤍';
       updateArtworkAura(art);
 
@@ -6177,6 +6398,8 @@
         playSongAt(currentTrackIndex + 1);
       } else if (repeatMode === 'all' && currentQueue.length > 0) {
         playSongAt(0);
+      } else if (isInfinityAutoplay && currentQueue.length > 0) {
+        triggerInfinityAutoplay();
       }
     }
 
@@ -7448,6 +7671,21 @@
       }
     }
 
+    function optActionQrCode() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      if (idx >= 0 && currentQueue[idx]) {
+        openCurrentSongQr(currentQueue[idx]);
+      }
+    }
+
+    function optActionDriveMode() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      if (idx >= 0) playSongAt(idx);
+      setTimeout(toggleDriveMode, 200);
+    }
+
     function optActionShare() {
       const idx = selectedOptionSongIndex;
       closeSongOptionsModal();
@@ -7500,6 +7738,8 @@
       // 2. Load saved EQ preset
       const savedEq = localStorage.getItem('user_eq_preset') || 'bass';
       currentEqPreset = savedEq;
+      updateInfinityPill();
+      checkWhatsAppInAppBrowser();
       const badge = document.getElementById('activeEqBadge');
       if (badge && EQ_PRESETS[savedEq]) badge.textContent = EQ_PRESETS[savedEq].name.split(' ')[0];
       const heroTag = document.getElementById('heroEqTag');
@@ -7555,6 +7795,253 @@
         });
       }
     });
+
+    // ==================== 1-TAP SOUND FX PRESETS & SMART INFINITY AUTOPLAY ====================
+    let activeQuickPreset = 'normal';
+    let isInfinityAutoplay = localStorage.getItem('musicpro_infinity_autoplay') !== 'false';
+    let isFetchingInfinityTracks = false;
+
+    function toggleQuickPreset(mode) {
+      if (activeQuickPreset === mode) {
+        resetQuickPreset();
+        return;
+      }
+      activeQuickPreset = mode;
+      document.querySelectorAll('.fx-pill').forEach(p => {
+        if (p.id !== 'pillFxInfinity') p.classList.remove('active');
+      });
+
+      if (mode === 'orbit') {
+        const pill = document.getElementById('pillFxOrbit');
+        if (pill) pill.classList.add('active');
+        setSpatialMode('orbit');
+        globalAudio.playbackRate = 1.0;
+        applyEqPreset('balanced');
+        showToast('🪐 8D Audio Active: 360° orbiting sound! (Use earphones)', '🪐');
+      } else if (mode === 'bass') {
+        const pill = document.getElementById('pillFxBass');
+        if (pill) pill.classList.add('active');
+        setSpatialMode('off');
+        globalAudio.playbackRate = 1.0;
+        applyEqPreset('bass');
+        showToast('🔊 Bass 2.0: Deep punchy subwoofer rumble!', '🔊');
+      } else if (mode === 'slowed') {
+        const pill = document.getElementById('pillFxSlowed');
+        if (pill) pill.classList.add('active');
+        setSpatialMode('off');
+        globalAudio.playbackRate = 0.85;
+        applyEqPreset('acoustic');
+        showToast('🌙 Slowed + Reverb: Dreamy atmospheric chill vibe', '🌙');
+      } else if (mode === 'nightcore') {
+        const pill = document.getElementById('pillFxNightcore');
+        if (pill) pill.classList.add('active');
+        setSpatialMode('off');
+        globalAudio.playbackRate = 1.25;
+        applyEqPreset('treble');
+        showToast('⚡ Nightcore Mode: 1.25x high-energy tempo rush', '⚡');
+      }
+    }
+
+    function resetQuickPreset() {
+      activeQuickPreset = 'normal';
+      document.querySelectorAll('.fx-pill').forEach(p => {
+        if (p.id !== 'pillFxInfinity') p.classList.remove('active');
+      });
+      setSpatialMode('off');
+      globalAudio.playbackRate = 1.0;
+      applyEqPreset('balanced');
+      showToast('🎧 Studio Master: Original balanced audio', '🎧');
+    }
+
+    function toggleInfinityAutoplay() {
+      isInfinityAutoplay = !isInfinityAutoplay;
+      localStorage.setItem('musicpro_infinity_autoplay', isInfinityAutoplay ? 'true' : 'false');
+      updateInfinityPill();
+      showToast(isInfinityAutoplay ? '♾️ Infinity Autoplay ON: Music will never stop!' : '♾️ Infinity Autoplay OFF', '♾️');
+    }
+
+    function updateInfinityPill() {
+      const pill = document.getElementById('pillFxInfinity');
+      if (pill) {
+        pill.classList.toggle('active', isInfinityAutoplay);
+        pill.textContent = isInfinityAutoplay ? '♾️ Autoplay: ON' : '♾️ Autoplay: OFF';
+      }
+    }
+
+    async function triggerInfinityAutoplay() {
+      if (isFetchingInfinityTracks) return;
+      const currentSong = currentQueue[currentTrackIndex] || currentQueue[currentQueue.length - 1];
+      if (!currentSong) return;
+
+      isFetchingInfinityTracks = true;
+      showToast('♾️ Infinity Radio: Finding next matching hit...', '✨');
+
+      try {
+        const query = currentSong.artist || currentSong.title.split(' ')[0] || 'trending';
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        if (!res.ok) throw new Error('Search failed');
+        const data = await res.json();
+        const songs = (data && data.results) || (Array.isArray(data) ? data : []);
+
+        const existingIds = new Set(currentQueue.map(s => s.id || (s.title + s.artist)));
+        const newTracks = songs.filter(s => !existingIds.has(s.id || (s.title + s.artist)));
+
+        if (newTracks.length > 0) {
+          const added = newTracks.slice(0, 8);
+          const nextIdx = currentQueue.length;
+          currentQueue.push(...added);
+          playSongAt(nextIdx);
+          showToast(`♾️ Radio added ${added.length} matching hits!`, '🎵');
+        } else if (repeatMode !== 'one') {
+          playSongAt(0);
+        }
+      } catch (err) {
+        console.warn('Infinity autoplay fallback:', err);
+        if (currentQueue.length > 0) playSongAt(0);
+      } finally {
+        isFetchingInfinityTracks = false;
+      }
+    }
+
+    // ==================== INSTANT SCAN-TO-PLAY QR CODE ====================
+    window._activeQrSong = null;
+    window._activeQrUrl = '';
+
+    function openCurrentSongQr(song) {
+      if (!song && currentQueue[currentTrackIndex]) song = currentQueue[currentTrackIndex];
+      if (!song) {
+        showToast('Play or select a song first to show QR', '⚠️');
+        return;
+      }
+      const modal = document.getElementById('qrCodeModal');
+      const titleEl = document.getElementById('qrSongTitle');
+      const artistEl = document.getElementById('qrSongArtist');
+      const imgEl = document.getElementById('qrCodeImg');
+
+      const shareQuery = song.title + ' ' + (song.artist || '');
+      const shareUrl = `${window.location.origin}/?song=${encodeURIComponent(shareQuery)}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=${encodeURIComponent(shareUrl)}`;
+
+      if (titleEl) titleEl.textContent = song.title;
+      if (artistEl) artistEl.textContent = song.artist || 'Music Pro';
+      if (imgEl) imgEl.src = qrUrl;
+
+      window._activeQrSong = song;
+      window._activeQrUrl = shareUrl;
+
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeQrModal() {
+      const modal = document.getElementById('qrCodeModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function copyQrSongLink() {
+      if (!window._activeQrUrl) return;
+      navigator.clipboard.writeText(window._activeQrUrl).then(() => {
+        showToast('Song link copied to clipboard! 📋', '✅');
+      }).catch(() => {
+        showToast('Link: ' + window._activeQrUrl, '📋');
+      });
+    }
+
+    function shareQrSongWhatsApp() {
+      if (!window._activeQrUrl || !window._activeQrSong) return;
+      const song = window._activeQrSong;
+      const text = `🎧 Listen to "${song.title}" on Music Pro: ${window._activeQrUrl}`;
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    // ==================== EASY PHONE INSTALL GUIDE (FOR PARENTS / ELDERS) ====================
+    function promptInstallApp() {
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOSDevice) {
+        openIosInstallModal(true);
+        return;
+      }
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choice) => {
+          if (choice.outcome === 'accepted') {
+            showToast('Music Pro added to your phone screen! 🎉', '📲');
+            const b = document.getElementById('installBanner');
+            if (b) b.style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      } else {
+        openIosInstallModal(false);
+      }
+    }
+
+    function openIosInstallModal(isIOS = true) {
+      const modal = document.getElementById('iosInstallModal');
+      const header = document.getElementById('installModalHeader');
+      const container = document.getElementById('installStepsContainer');
+      if (!modal || !container) return;
+
+      if (isIOS) {
+        header.textContent = '📲 Add to iPhone Home Screen';
+        container.innerHTML = `
+          <div class="ios-step-card">
+            <div class="ios-step-num">1</div>
+            <div class="ios-step-content">
+              Tap the <strong>Share</strong> button at the bottom of Safari (<span style="font-size:1.1rem;">⬆️</span> box with arrow).
+            </div>
+          </div>
+          <div class="ios-step-card">
+            <div class="ios-step-num">2</div>
+            <div class="ios-step-content">
+              Scroll down the menu and tap <strong>"Add to Home Screen"</strong> (<span style="font-size:1.1rem;">➕</span>).
+            </div>
+          </div>
+          <div class="ios-step-card">
+            <div class="ios-step-num">3</div>
+            <div class="ios-step-content">
+              Tap <strong>"Add"</strong> in the top-right corner. The Music Pro icon will appear on your phone screen!
+            </div>
+          </div>
+        `;
+      } else {
+        header.textContent = '📲 Add to Android Home Screen';
+        container.innerHTML = `
+          <div class="ios-step-card">
+            <div class="ios-step-num">1</div>
+            <div class="ios-step-content">
+              Tap the <strong>3 Dots Menu</strong> in the top-right corner of Chrome (<span style="font-size:1.1rem;">⋮</span>).
+            </div>
+          </div>
+          <div class="ios-step-card">
+            <div class="ios-step-num">2</div>
+            <div class="ios-step-content">
+              Tap <strong>"Install App"</strong> or <strong>"Add to Home Screen"</strong> (<span style="font-size:1.1rem;">📲</span>).
+            </div>
+          </div>
+          <div class="ios-step-card">
+            <div class="ios-step-num">3</div>
+            <div class="ios-step-content">
+              Tap <strong>"Install"</strong> to confirm. Music Pro is now installed like a native app!
+            </div>
+          </div>
+        `;
+      }
+      modal.style.display = 'flex';
+    }
+
+    function closeIosInstallModal() {
+      const modal = document.getElementById('iosInstallModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function checkWhatsAppInAppBrowser() {
+      const ua = navigator.userAgent || '';
+      if (ua.includes('WhatsApp') || ua.includes('FBAN') || ua.includes('FBAV') || ua.includes('Instagram')) {
+        const notice = document.getElementById('whatsappNotice');
+        if (notice) notice.style.display = 'flex';
+      }
+    }
 
     // PWA Prompt
     let deferredPrompt = null;
