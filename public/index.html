@@ -8059,14 +8059,7 @@
 
     // ==================== 1-TIME WELCOME FEATURE TOUR ====================
     function checkOneTimeWelcomeTour() {
-      try {
-        const seen = localStorage.getItem('seen_musicpro_tour_v1');
-        if (!seen) {
-          setTimeout(() => {
-            openWelcomeTour();
-          }, 650);
-        }
-      } catch(e) {}
+      // Tour is manually available via header "✨ Tour" button to prevent blocking initial interaction
     }
 
     function openWelcomeTour(force = false) {
