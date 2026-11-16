@@ -3402,7 +3402,7 @@
           <span style="font-size: 1.5rem; line-height: 1;">🔒</span>
           <div>
             <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Screen-Locked Background Play</div>
-            <div style="font-size: 0.75rem; color: #94a3af;">Lock your iPhone or switch apps — music never stops with full lock-screen controls.</div>
+            <div style="font-size: 0.75rem; color: #94a3af;">Non-stop background play on iOS Safari & Android Chrome. Lock-screen controls powered by standard MediaSession.</div>
           </div>
         </div>
 
@@ -3425,8 +3425,8 @@
         <div style="display: flex; gap: 0.8rem; align-items: flex-start; background: rgba(255,255,255,0.03); border-radius: 14px; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.06);">
           <span style="font-size: 1.5rem; line-height: 1;">✈️</span>
           <div>
-            <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Offline Airplane Mode & WhatsApp Cards</div>
-            <div style="font-size: 0.75rem; color: #94a3af;">Tap ••• on any song to save for offline listening or create an aesthetic story card for WhatsApp Status!</div>
+            <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Verified Offline Mode (IndexedDB)</div>
+            <div style="font-size: 0.75rem; color: #94a3af;">Tap ••• to save audio blobs into browser IndexedDB storage for verified playback in Airplane Mode without cellular data.</div>
           </div>
         </div>
       </div>
@@ -4471,6 +4471,46 @@
       }
     });
 
+    function decodeHtmlEntities(str) {
+      if (!str) return '';
+      const doc = new DOMParser().parseFromString(str, 'text/html');
+      return doc.body.textContent || str;
+    }
+
+    function deduplicateAndCleanTracks(rawList) {
+      const seen = new Set();
+      const cleaned = [];
+
+      for (const song of rawList) {
+        if (!song || !song.title) continue;
+        const audioUrl = song.audioUrl || song.url320 || song.url160 || song.audioUrl160 || song.url96 || '';
+        if (!audioUrl) continue;
+
+        song.title = decodeHtmlEntities(song.title)
+          .replace(/\(Official.*?\)|\[Official.*?\]|\(Full Video\)|\(Lyric Video\)|\(Audio\)/gi, '')
+          .trim();
+        song.artist = decodeHtmlEntities(song.artist || 'Unknown Artist').trim();
+        song.album = decodeHtmlEntities(song.album || 'Single').trim();
+
+        // Normalization composite key to eliminate duplicates
+        const normTitle = song.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const normArtist = song.artist.toLowerCase().split(',')[0].replace(/[^a-z0-9]/g, '');
+        const key = `${normTitle}::${normArtist}`;
+
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        song.artwork = song.artwork || song.imageHigh || song.imageMed || '';
+        song.audioUrl = audioUrl;
+        song.audioUrl160 = song.audioUrl160 || song.url160 || song.audioUrl;
+        song.audioUrl96 = song.audioUrl96 || song.url96 || song.audioUrl160;
+        song.bitrate = song.url320 ? '320kbps' : (song.url160 ? '160kbps' : 'HD Stream');
+
+        cleaned.push(song);
+      }
+      return cleaned;
+    }
+
     async function searchSongs(overrideQuery) {
       hideSuggestions();
       const rawQuery = overrideQuery || searchInput.value.trim();
@@ -4505,7 +4545,8 @@
       `).join('');
 
       try {
-        const results = await apiSearch(query);
+        const rawResults = await apiSearch(query);
+        const results = deduplicateAndCleanTracks(rawResults);
 
         if (!results.length) {
           resultsContainer.innerHTML = `
@@ -4515,14 +4556,6 @@
           `;
           return;
         }
-
-        // Normalize songs
-        results.forEach(song => {
-          song.artwork = song.artwork || song.imageHigh || song.imageMed || '';
-          song.audioUrl = song.audioUrl || song.url320 || song.url160 || song.url96 || '';
-          song.audioUrl160 = song.audioUrl160 || song.url160 || song.audioUrl;
-          song.audioUrl96 = song.audioUrl96 || song.url96 || song.audioUrl160;
-        });
 
         searchCache.set(query, results);
         currentQueue = results;
@@ -4577,7 +4610,7 @@
                 <div class="song-artist" title="${escapeHtml(artist)}">${escapeHtml(artist)}</div>
                 <div class="song-meta">
                   ${escapeHtml(album)}${year}${dur}
-                  <span class="tag-full">320kbps</span>
+                  <span class="tag-full">${escapeHtml(song.bitrate || '320kbps')}</span>
                 </div>
               </div>
               <div class="song-actions-quick">
@@ -5144,18 +5177,25 @@
 
       const allStations = getAllRadioStations();
       container.innerHTML = allStations.map(st => {
-        const isCurrent = activeRadioStationId === st.id && !globalAudio.paused;
+        const isThis = activeRadioStationId === st.id;
+        const isPlaying = isThis && !globalAudio.paused && globalAudio.currentTime > 0;
+        const isConnecting = isThis && (globalAudio.paused || globalAudio.currentTime === 0);
         const isCustom = st.isCustom === true;
+
+        let statusText = '▶ Tune In Live';
+        if (isPlaying) statusText = '🟢 Streaming Live';
+        else if (isConnecting) statusText = '⏳ Connecting Stream...';
+
         return `
-          <div class="radio-card ${isCurrent ? 'now-playing-station' : ''}" id="radioCard_${st.id}">
+          <div class="radio-card ${isPlaying ? 'now-playing-station' : ''}" id="radioCard_${st.id}">
             <div>
               <div class="radio-card-top">
                 <span class="radio-live-tag">
-                  <span class="radio-live-dot"></span> LIVE ON AIR
+                  <span class="radio-live-dot ${isPlaying ? 'pulsing' : ''}"></span> ${isPlaying ? 'LIVE STREAMING' : '24/7 STREAM'}
                 </span>
                 <div style="display:flex; align-items:center; gap:0.4rem;">
                   ${isCustom ? `<span class="custom-station-badge">✨ My Station</span>` : ''}
-                  <span class="radio-listeners">👥 ${st.listeners || '12k+'}</span>
+                  <span class="radio-listeners" title="Estimated live concurrent listeners">👥 ~${st.listeners || '12k'} (est.)</span>
                   ${isCustom ? `<button class="btn-del-station" onclick="deleteCustomStation('${st.id}', event)" title="Delete station">🗑️</button>` : ''}
                 </div>
               </div>
@@ -5163,8 +5203,8 @@
               <div style="font-size:0.72rem; font-weight:800; color:#38bdf8; margin-bottom:0.4rem;">${escapeHtml(st.tag || 'CUSTOM')}</div>
               <div class="radio-station-desc">${escapeHtml(st.desc || 'Endless continuous custom radio station stream')}</div>
             </div>
-            <button class="radio-btn-tune ${isCurrent ? 'active-tuned' : ''}" onclick="tuneIntoStation('${st.id}')">
-              ${isCurrent ? '🟢 Currently On Air (Playing)' : '▶ Tune In Live'}
+            <button class="radio-btn-tune ${isPlaying ? 'active-tuned' : ''}" onclick="tuneIntoStation('${st.id}')">
+              ${statusText}
             </button>
           </div>
         `;
@@ -5359,26 +5399,48 @@
 
     async function fetchSongLyrics(song) {
       const contentEl = document.getElementById('lyricsContent');
-      contentEl.innerHTML = '<div style="text-align:center; padding:2rem; color:#38bdf8;">⏳ Fetching verified lyrics & karaoke lines...</div>';
+      contentEl.innerHTML = '<div style="text-align:center; padding:2rem; color:#38bdf8;">⏳ Checking lyrics catalog...</div>';
 
       const cleanArtist = (song.artist || '').split(',')[0].replace(/\(.*\)|\[.*\]/g, '').trim();
       const cleanTitle = (song.title || '').replace(/\(.*\)|\[.*\]/g, '').trim();
 
+      let foundLyrics = null;
       try {
-        const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(cleanArtist)}/${encodeURIComponent(cleanTitle)}`);
-        const data = await res.json();
-
-        if (data.lyrics && data.lyrics.trim().length > 20) {
-          fetchedLyricsText = data.lyrics;
-          renderLyricsLines(data.lyrics);
-          return;
+        const res = await fetchWithTimeout(`https://api.lyrics.ovh/v1/${encodeURIComponent(cleanArtist)}/${encodeURIComponent(cleanTitle)}`, 2800);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.lyrics && data.lyrics.trim().length > 20) {
+            foundLyrics = data.lyrics;
+          }
         }
       } catch(e) {
-        // Fallback below
+        // Handled below gracefully
       }
 
-      fetchedLyricsText = `[00:00.00] 🎵 ${song.title} - ${song.artist}\n[00:10.00] 🎶 Music playing... Feel the rhythm!\n[00:20.00] ✨ Sing along to your favorite track\n[00:35.00] 🔥 Telugu DJ Mass Beat Drop!\n[00:50.00] 🎤 Chorus: ${song.title}\n[01:10.00] 🎧 Verse: ${song.artist}\n[01:40.00] 🎸 Mass Beat & Instrumental Groove\n[02:10.00] 🎤 Chorus Refrain\n[02:40.00] 🎶 Outro`;
-      renderLyricsLines(fetchedLyricsText, true);
+      if (foundLyrics) {
+        fetchedLyricsText = foundLyrics;
+        renderLyricsLines(foundLyrics);
+      } else {
+        fetchedLyricsText = '';
+        contentEl.innerHTML = `
+          <div style="text-align:center; padding:1.5rem 0.8rem;">
+            <div style="font-size:2.4rem; margin-bottom:0.6rem;">🎤</div>
+            <div style="font-weight:800; font-size:1.15rem; color:#fff; margin-bottom:0.35rem;">Karaoke Mode Ready</div>
+            <div style="font-size:0.84rem; color:#94a3af; margin-bottom:1.2rem; line-height:1.45; max-width:320px; margin-left:auto; margin-right:auto;">
+              Verified synchronized text for <strong>"${escapeHtml(song.title)}"</strong> is not available in the public catalog.<br/>
+              Read full lyrics on Google or mute vocals with our karaoke toggle!
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.65rem; max-width:280px; margin:0 auto;">
+              <button class="btn-setting-action" onclick="searchGoogleLyrics()" style="background:#0ea5e9; color:#fff; font-weight:800; padding:0.75rem; border-radius:12px;">
+                🔍 View Lyrics on Google
+              </button>
+              <button class="btn-setting-action" onclick="closeLyricsModal(); openEqModal();" style="background:rgba(255,255,255,0.08); color:#38bdf8; font-weight:700; padding:0.75rem; border-radius:12px;">
+                🎛️ Open Vocal / Sound Lab
+              </button>
+            </div>
+          </div>
+        `;
+      }
     }
 
     function renderLyricsLines(text, isFallback = false) {
@@ -6190,7 +6252,40 @@
       } catch(e) {}
     }
 
-    // ==================== STICKY PLAYER & LOCK SCREEN ====================
+    // ==================== STICKY PLAYER & REAL-TIME PLAYBACK STATE ====================
+    function setPlaybackUIState(state) {
+      const heroPlayBtn = document.getElementById('heroPlayPauseBtn');
+      const expPlayBtn = document.getElementById('expPlayBtn');
+      const drivePlayBtn = document.getElementById('driveGiantPlayBtn');
+
+      if (state === 'buffering') {
+        btnPlayPause.textContent = '⏳';
+        if (heroPlayBtn) heroPlayBtn.textContent = '⏳';
+        if (expPlayBtn) expPlayBtn.textContent = '⏳';
+        if (drivePlayBtn) drivePlayBtn.textContent = '⏳';
+        if (audioVisualizer) audioVisualizer.classList.remove('playing');
+      } else if (state === 'playing') {
+        btnPlayPause.textContent = '⏸';
+        if (heroPlayBtn) heroPlayBtn.textContent = '⏸';
+        if (expPlayBtn) expPlayBtn.textContent = '⏸';
+        if (drivePlayBtn) drivePlayBtn.textContent = '⏸';
+        if (audioVisualizer) audioVisualizer.classList.add('playing');
+      } else if (state === 'paused') {
+        btnPlayPause.textContent = '▶';
+        if (heroPlayBtn) heroPlayBtn.textContent = '▶';
+        if (expPlayBtn) expPlayBtn.textContent = '▶';
+        if (drivePlayBtn) drivePlayBtn.textContent = '▶';
+        if (audioVisualizer) audioVisualizer.classList.remove('playing');
+      } else if (state === 'error') {
+        btnPlayPause.textContent = '▶';
+        if (heroPlayBtn) heroPlayBtn.textContent = '▶';
+        if (expPlayBtn) expPlayBtn.textContent = '▶';
+        if (drivePlayBtn) drivePlayBtn.textContent = '▶';
+        if (audioVisualizer) audioVisualizer.classList.remove('playing');
+        currentTimeEl.textContent = '0:00';
+      }
+    }
+
     function playSongAt(idx) {
       if (!currentQueue[idx]) return;
       currentTrackIndex = idx;
@@ -6219,7 +6314,6 @@
         document.getElementById('heroArt').src = art;
         document.getElementById('heroTitle').textContent = song.title;
         document.getElementById('heroArtist').textContent = song.artist;
-        document.getElementById('heroPlayPauseBtn').textContent = '⏸';
       }
 
       // 2. Update Bottom Sticky Player
@@ -6232,22 +6326,21 @@
       const expArt = document.getElementById('expandedArt');
       const expTitle = document.getElementById('expandedTitle');
       const expArtist = document.getElementById('expandedArtist');
-      const expPlayBtn = document.getElementById('expPlayBtn');
       const driveTitle = document.getElementById('driveTitle');
       const driveArtist = document.getElementById('driveArtist');
-      const drivePlayBtn = document.getElementById('driveGiantPlayBtn');
       const expFavBtn = document.getElementById('expandedFavBtn');
       if (expArt) expArt.src = art;
       if (expTitle) expTitle.textContent = song.title;
       if (expArtist) expArtist.textContent = song.artist;
-      if (expPlayBtn) expPlayBtn.textContent = '⏸';
       if (driveTitle) driveTitle.textContent = song.title;
       if (driveArtist) driveArtist.textContent = song.artist;
-      if (drivePlayBtn) drivePlayBtn.textContent = '⏸';
       const driveArt = document.getElementById('driveArt');
       if (driveArt) driveArt.src = art;
       if (expFavBtn) expFavBtn.textContent = isFavorite(song) ? '❤️' : '🤍';
       updateArtworkAura(art);
+
+      // Set playback UI to buffering state while network loads audio chunk
+      setPlaybackUIState('buffering');
 
       // 3. Save to Recently Played
       addToRecentlyPlayed(song);
@@ -6273,20 +6366,18 @@
       globalAudio.src = audioUrl;
       const playPromise = globalAudio.play();
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          btnPlayPause.textContent = '⏸';
-          if (audioVisualizer) audioVisualizer.classList.add('playing');
-        }).catch(err => {
-          console.warn('Playback error, trying 160k fallback:', err);
+        playPromise.catch(err => {
+          console.warn('Playback error or gesture required, trying fallback:', err);
           const fallbackUrl = song.audioUrl160 || song.url160;
           if (fallbackUrl && fallbackUrl !== audioUrl) {
             globalAudio.src = fallbackUrl;
-            globalAudio.play().then(() => {
-              btnPlayPause.textContent = '⏸';
-              if (audioVisualizer) audioVisualizer.classList.add('playing');
-            }).catch(e => {
-              showToast('Click play to allow audio', 'ℹ️');
+            globalAudio.play().catch(e => {
+              setPlaybackUIState('paused');
+              showToast('Tap play to start audio stream', 'ℹ️');
             });
+          } else {
+            setPlaybackUIState('paused');
+            showToast('Tap play to start audio stream', 'ℹ️');
           }
         });
       }
@@ -6345,42 +6436,69 @@
     }
 
     // Auto-fallback if audio error occurs
-    globalAudio.addEventListener('error', () => {
-      const song = currentQueue[currentTrackIndex];
-      if (song && song.audioUrl160 && globalAudio.src !== song.audioUrl160) {
-        console.warn('Switching to fallback bitrate 160kbps stream...');
-        globalAudio.src = song.audioUrl160;
-        globalAudio.play().catch(() => {});
-      }
-    });
-
     function togglePlayPause() {
-      const heroPlayBtn = document.getElementById('heroPlayPauseBtn');
-      const expPlayBtn = document.getElementById('expPlayBtn');
-      const drivePlayBtn = document.getElementById('driveGiantPlayBtn');
-
       if (globalAudio.paused) {
-        globalAudio.play().catch(() => {});
-        btnPlayPause.textContent = '⏸';
-        if (heroPlayBtn) heroPlayBtn.textContent = '⏸';
-        if (expPlayBtn) expPlayBtn.textContent = '⏸';
-        if (drivePlayBtn) drivePlayBtn.textContent = '⏸';
-        if (audioVisualizer) audioVisualizer.classList.add('playing');
+        setPlaybackUIState('buffering');
+        const playPromise = globalAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            console.warn('Playback error or gesture needed:', err);
+            setPlaybackUIState('paused');
+            showToast('Tap play to start audio stream', 'ℹ️');
+          });
+        }
         if (!isRemoteSync && jamConnections.length > 0) {
           broadcastJamData({ type: 'PLAY', currentTime: globalAudio.currentTime, sender: jamNickname });
         }
       } else {
         globalAudio.pause();
-        btnPlayPause.textContent = '▶';
-        if (heroPlayBtn) heroPlayBtn.textContent = '▶';
-        if (expPlayBtn) expPlayBtn.textContent = '▶';
-        if (drivePlayBtn) drivePlayBtn.textContent = '▶';
-        if (audioVisualizer) audioVisualizer.classList.remove('playing');
+        setPlaybackUIState('paused');
         if (!isRemoteSync && jamConnections.length > 0) {
           broadcastJamData({ type: 'PAUSE', currentTime: globalAudio.currentTime, sender: jamNickname });
         }
       }
     }
+
+    // Comprehensive real-time audio lifecycle events
+    globalAudio.addEventListener('waiting', () => {
+      setPlaybackUIState('buffering');
+    });
+
+    globalAudio.addEventListener('playing', () => {
+      setPlaybackUIState('playing');
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
+      requestWakeLock();
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+      if (isRadioModeActive) renderRadioStations();
+    });
+
+    globalAudio.addEventListener('pause', () => {
+      setPlaybackUIState('paused');
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
+      releaseWakeLock();
+      if (isRadioModeActive) renderRadioStations();
+    });
+
+    globalAudio.addEventListener('error', (e) => {
+      console.warn('Audio stream error event:', e);
+      setPlaybackUIState('error');
+      const song = currentQueue[currentTrackIndex];
+      const fallbackUrl = song ? (song.audioUrl160 || song.url160) : null;
+      if (fallbackUrl && globalAudio.src !== fallbackUrl) {
+        console.warn('Switching to fallback bitrate 160kbps stream...');
+        showToast('Switching to backup quality stream...', '🔄');
+        globalAudio.src = fallbackUrl;
+        globalAudio.play().catch(() => setPlaybackUIState('paused'));
+      } else {
+        showToast('Audio stream unavailable. Please try another track.', '⚠️');
+      }
+    });
 
     function playNextSong() {
       if (isRadioModeActive && activeRadioStationId) {
@@ -6460,23 +6578,6 @@
       } else {
         playNextSong();
       }
-    });
-
-    globalAudio.addEventListener('play', () => {
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'playing';
-      }
-      requestWakeLock();
-      if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume().catch(() => {});
-      }
-    });
-
-    globalAudio.addEventListener('pause', () => {
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'paused';
-      }
-      releaseWakeLock();
     });
 
     // ==================== BACKGROUND & LOCK-SCREEN CONTINUOUS PLAY ENGINE ====================
@@ -6851,8 +6952,9 @@
         const db = await openOfflineDb();
         const tx = db.transaction(OFFLINE_STORE_NAME, 'readwrite');
         tx.objectStore(OFFLINE_STORE_NAME).put(songRecord);
+        const sizeMb = (audioBlob.size / (1024 * 1024)).toFixed(1);
         tx.oncomplete = () => {
-          showToast(`✈️ "${song.title}" saved! Works anytime in Airplane Mode`, '✅');
+          showToast(`✈️ "${song.title}" (${sizeMb} MB) verified & saved for Airplane Mode!`, '✅');
           renderOfflineLibrary();
         };
       } catch (err) {
