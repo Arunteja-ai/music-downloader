@@ -14,6 +14,9 @@ function getCache(key) {
     searchMemoryCache.delete(key);
     return null;
   }
+  // True LRU: Re-insert on hit so it moves to the end (most recently used)
+  searchMemoryCache.delete(key);
+  searchMemoryCache.set(key, item);
   return item.data;
 }
 
@@ -110,12 +113,15 @@ function rankTracks(tracks, query) {
   const isCategoryQuery = qTokens.some(token => CATEGORY_DISCOVERY_WORDS.has(token));
 
   // Filter out completely unrelated tracks for garbage/typo queries,
-  // but preserve discovery/genre/language queries
+  // but preserve discovery/genre/language queries with multi-token precision
   let validTracks = tracks;
   if (!isCategoryQuery && qTokens.length > 0) {
+    const minMatchesRequired = qTokens.length >= 3 ? 2 : 1;
     validTracks = tracks.filter(t => {
       const text = ((t.title || '') + ' ' + (t.artist || '') + ' ' + (t.album || '') + ' ' + (t.language || '')).toLowerCase();
-      return qTokens.some(token => text.includes(token));
+      if (text.includes(qClean)) return true;
+      const matchedCount = qTokens.filter(token => text.includes(token)).length;
+      return matchedCount >= minMatchesRequired;
     });
   }
 
@@ -193,7 +199,8 @@ async function searchItunesFallback(query) {
         url160: preview,
         url96: preview,
         isFullSong: false,
-        source: 'Audio'
+        isPreview: true,
+        source: 'iTunes 30s Preview'
       };
     });
   } catch (e) {
@@ -311,11 +318,22 @@ module.exports = async (req, res) => {
     res.setHeader('X-Edge-Cache', 'MISS');
     return res.status(200).json(payload);
   } catch (error) {
-    const fallback = await searchItunesFallback(query);
-    const payload = { results: fallback, fallback: true, error: error.message };
+    let fallback = [];
+    try {
+      fallback = await searchItunesFallback(query);
+    } catch (e) {}
+
     if (fallback.length > 0) {
+      const payload = { results: fallback, fallback: true, notice: 'Showing iTunes preview results' };
       setCache(cacheKey, payload);
+      return res.status(200).json(payload);
     }
-    return res.status(200).json(payload);
+
+    return res.status(200).json({
+      results: [],
+      fallback: false,
+      providerError: true,
+      error: 'Search provider temporarily unreachable. Please try again.'
+    });
   }
 };
