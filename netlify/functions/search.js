@@ -2,10 +2,9 @@ const CryptoJS = require('crypto-js');
 
 const DES_KEY = CryptoJS.enc.Utf8.parse('38346591');
 
-// High-Performance In-Memory LRU Cache for Ultra-Fast repeat responses (<5ms)
 const searchMemoryCache = new Map();
 const MAX_CACHE_SIZE = 400;
-const CACHE_TTL_MS = 25 * 60 * 1000; // 25 minutes TTL
+const CACHE_TTL_MS = 25 * 60 * 1000;
 
 function getCache(key) {
   const item = searchMemoryCache.get(key);
@@ -133,26 +132,28 @@ async function searchItunesFallback(query) {
   }
 }
 
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400');
+exports.handler = async (event, context) => {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Cache-Control': 'public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400'
+  };
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
   }
 
-  const query = (req.query && req.query.q) || '';
+  const query = (event.queryStringParameters && event.queryStringParameters.q) || '';
   if (!query || !query.trim()) {
-    return res.status(400).json({ error: 'Missing query parameter q' });
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing query parameter q' }) };
   }
 
   const cacheKey = query.trim().toLowerCase();
   const cached = getCache(cacheKey);
   if (cached) {
-    res.setHeader('X-Edge-Cache', 'HIT');
-    return res.status(200).json(cached);
+    return { statusCode: 200, headers: { ...headers, 'X-Edge-Cache': 'HIT' }, body: JSON.stringify(cached) };
   }
 
   try {
@@ -209,20 +210,18 @@ module.exports = async (req, res) => {
       const fallback = await searchItunesFallback(query);
       const payload = { results: fallback, fallback: true };
       setCache(cacheKey, payload);
-      res.setHeader('X-Edge-Cache', 'MISS');
-      return res.status(200).json(payload);
+      return { statusCode: 200, headers: { ...headers, 'X-Edge-Cache': 'MISS' }, body: JSON.stringify(payload) };
     }
 
     const payload = { results, fallback: false };
     setCache(cacheKey, payload);
-    res.setHeader('X-Edge-Cache', 'MISS');
-    return res.status(200).json(payload);
+    return { statusCode: 200, headers: { ...headers, 'X-Edge-Cache': 'MISS' }, body: JSON.stringify(payload) };
   } catch (error) {
     const fallback = await searchItunesFallback(query);
     const payload = { results: fallback, fallback: true, error: error.message };
     if (fallback.length > 0) {
       setCache(cacheKey, payload);
     }
-    return res.status(200).json(payload);
+    return { statusCode: 200, headers, body: JSON.stringify(payload) };
   }
 };

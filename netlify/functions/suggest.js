@@ -21,26 +21,28 @@ function setSuggestCache(key, data) {
   suggestCache.set(key, { data, time: Date.now() });
 }
 
-module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=7200, stale-while-revalidate=86400');
+exports.handler = async (event, context) => {
+  const headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Cache-Control': 'public, max-age=3600, s-maxage=7200'
+  };
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
   }
 
-  const query = (req.query && req.query.q) || '';
+  const query = (event.queryStringParameters && event.queryStringParameters.q) || '';
   if (!query || query.trim().length < 2) {
-    return res.status(200).json({ suggestions: [] });
+    return { statusCode: 200, headers, body: JSON.stringify({ suggestions: [] }) };
   }
 
   const key = query.trim().toLowerCase();
   const cached = getSuggestCache(key);
   if (cached) {
-    res.setHeader('X-Edge-Cache', 'HIT');
-    return res.status(200).json(cached);
+    return { statusCode: 200, headers, body: JSON.stringify(cached) };
   }
 
   try {
@@ -70,9 +72,8 @@ module.exports = async (req, res) => {
 
     const payload = { suggestions };
     setSuggestCache(key, payload);
-    res.setHeader('X-Edge-Cache', 'MISS');
-    return res.status(200).json(payload);
+    return { statusCode: 200, headers, body: JSON.stringify(payload) };
   } catch (err) {
-    return res.status(200).json({ suggestions: [] });
+    return { statusCode: 200, headers, body: JSON.stringify({ suggestions: [] }) };
   }
 };
