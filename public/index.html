@@ -51,21 +51,16 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <!-- WebRTC for Synchronized Listen Together -->
-  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <!-- WebRTC for Synchronized Listen Together (deferred so it never blocks page load) -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js" defer></script>
 
-  <!-- Defensive In-App Browser Shield: Prevents injected scripts from throwing on invalid MutationObserver target -->
+  <!-- Safe Global Error Guard for third-party in-app browser script injections -->
   <script>
-    if (typeof window !== 'undefined' && window.MutationObserver) {
-      const _origObserve = MutationObserver.prototype.observe;
-      MutationObserver.prototype.observe = function(target, options) {
-        if (!target || (!target.nodeType && !(target instanceof Node))) {
-          console.warn('Defensive shield: Invalid MutationObserver target:', target);
-          return;
-        }
-        return _origObserve.apply(this, arguments);
-      };
-    }
+    window.addEventListener('error', function(e) {
+      if (e && e.message && e.message.includes('MutationObserver')) {
+        e.preventDefault();
+      }
+    });
   </script>
 
   <style>
