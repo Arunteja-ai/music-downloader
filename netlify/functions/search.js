@@ -97,7 +97,15 @@ function rankTracks(tracks, query) {
   const qClean = query.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
   const qTokens = qClean.split(/\s+/).filter(w => w.length > 1);
 
-  return tracks.map((track, originalIdx) => {
+  const validTracks = tracks.filter(t => {
+    if (!qTokens.length) return true;
+    const text = ((t.title || '') + ' ' + (t.artist || '') + ' ' + (t.album || '')).toLowerCase();
+    return qTokens.some(token => text.includes(token));
+  });
+
+  if (validTracks.length === 0) return [];
+
+  return validTracks.map((track, originalIdx) => {
     let score = 0;
     const titleClean = (track.title || '').toLowerCase();
     const artistClean = (track.artist || '').toLowerCase();
@@ -109,20 +117,20 @@ function rankTracks(tracks, query) {
       score += 60;
     }
 
-    if (artistClean === qClean || artistClean.includes(qClean)) {
-      score += 80;
+    if (artistClean === qClean || qClean.includes(artistClean)) {
+      score += 90;
     }
 
     qTokens.forEach(token => {
-      if (titleClean.includes(token)) score += 25;
-      if (artistClean.includes(token)) score += 20;
+      if (titleClean.includes(token)) score += 30;
+      if (artistClean.includes(token)) score += 40;
       if (albumClean.includes(token)) score += 5;
     });
 
-    const isCover = titleClean.includes('cover') || titleClean.includes('karaoke') || titleClean.includes('tribute') || titleClean.includes('piano instrumental');
-    const userWantsCover = qClean.includes('cover') || qClean.includes('karaoke') || qClean.includes('tribute') || qClean.includes('piano');
+    const isCover = titleClean.includes('cover') || titleClean.includes('karaoke') || titleClean.includes('tribute') || titleClean.includes('fingerstyle') || titleClean.includes('piano') || titleClean.includes('instrumental');
+    const userWantsCover = qClean.includes('cover') || qClean.includes('karaoke') || qClean.includes('tribute') || qClean.includes('piano') || qClean.includes('instrumental');
     if (isCover && !userWantsCover) {
-      score -= 50;
+      score -= 100;
     }
 
     if (track.isFullSong) score += 5;
