@@ -1,64 +1,78 @@
-function decodeEntities(str) {
-  if (!str) return '';
-  return str
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#(\d+);/g, (m, d) => String.fromCharCode(d));
+// High-Performance In-Memory LRU Cache for Auto-Suggestions
+const suggestCache = new Map();
+const MAX_SUGGEST_CACHE = 500;
+const SUGGEST_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+function getSuggestCache(key) {
+  const item = suggestCache.get(key);
+  if (!item) return null;
+  if (Date.now() - item.time > SUGGEST_TTL_MS) {
+    suggestCache.delete(key);
+    return null;
+  }
+  return item.data;
 }
 
-exports.handler = async (event, context) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Content-Type': 'application/json'
-  };
+function setSuggestCache(key, data) {
+  if (suggestCache.size >= MAX_SUGGEST_CACHE) {
+    const oldestKey = suggestCache.keys().next().value;
+    suggestCache.delete(oldestKey);
+  }
+  suggestCache.set(key, { data, time: Date.now() });
+}
 
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=7200, stale-while-revalidate=86400');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
-  const query = event.queryStringParameters ? event.queryStringParameters.q : null;
-  if (!query) {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ suggestions: [] })
-    };
+  const query = (req.query && req.query.q) || '';
+  if (!query || query.trim().length < 2) {
+    return res.status(200).json({ suggestions: [] });
+  }
+
+  const key = query.trim().toLowerCase();
+  const cached = getSuggestCache(key);
+  if (cached) {
+    res.setHeader('X-Edge-Cache', 'HIT');
+    return res.status(200).json(cached);
   }
 
   try {
-    const url = `https://www.jiosaavn.com/api.php?__call=autocomplete.get&_format=json&_marker=0&cc=in&query=${encodeURIComponent(query)}`;
+    const url = `https://www.jiosaavn.com/api.php?__call=autocomplete.get&_format=json&_marker=0&cc=in&includeMetaTags=1&query=${encodeURIComponent(query)}`;
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
     });
     const data = await response.json();
-    let suggestions = [];
+    const suggestions = [];
 
     if (data && data.songs && data.songs.data) {
-      for (const item of data.songs.data) {
+      for (const item of data.songs.data.slice(0, 7)) {
+        let art = item.image || '';
+        if (art) {
+          art = art.replace('50x50', '150x150');
+        }
         suggestions.push({
-          title: decodeEntities(item.title),
-          description: decodeEntities(item.description || item.more_info?.primary_artists || ''),
-          image: (item.image || '').replace('50x50.jpg', '150x150.jpg')
+          id: item.id,
+          title: item.title ? item.title.replace(/&quot;/g, '"').replace(/&amp;/g, '&') : '',
+          description: item.description ? item.description.replace(/&quot;/g, '"').replace(/&amp;/g, '&') : '',
+          image: art
         });
       }
     }
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ suggestions: suggestions.slice(0, 7) })
-    };
-  } catch (error) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ suggestions: [] })
-    };
+    const payload = { suggestions };
+    setSuggestCache(key, payload);
+    res.setHeader('X-Edge-Cache', 'MISS');
+    return res.status(200).json(payload);
+  } catch (err) {
+    return res.status(200).json({ suggestions: [] });
   }
 };

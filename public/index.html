@@ -875,6 +875,10 @@
       gap: 0.85rem;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
       transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
+      content-visibility: auto;
+      contain-intrinsic-size: 0 110px;
+      transform: translateZ(0);
+      will-change: transform;
     }
 
     .song-card:hover {
@@ -2329,6 +2333,8 @@
       justify-content: space-around;
       z-index: 9998;
       padding-bottom: env(safe-area-inset-bottom, 0px);
+      transform: translateZ(0);
+      will-change: transform;
     }
     .bnav-btn {
       background: transparent;
@@ -2369,13 +2375,16 @@
       display: flex;
       flex-direction: column;
       padding: max(1rem, env(safe-area-inset-top, 1rem)) 1.4rem max(1.4rem, env(safe-area-inset-bottom, 1.4rem));
-      transform: translateY(105%);
+      transform: translate3d(0, 105%, 0);
+      will-change: transform;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
       transition: transform 0.36s cubic-bezier(0.32, 1, 0.23, 1);
       overflow-y: auto;
       box-sizing: border-box;
     }
     .expanded-player-sheet.sheet-open {
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
     .expanded-drag-handle {
       display: flex;
@@ -4075,7 +4084,7 @@
           <div class="song-card">
             <div class="song-header">
               <div class="art-wrapper" onclick="playSongAt(${idx})">
-                <img class="song-art" src="${escapeHtml(art)}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2276%22 height=%2276%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23888%22 stroke-width=%222%22><rect width=%2218%22 height=%2218%22 x=%223%22 y=%223%22 rx=%222%22/><circle cx=%2212%22 cy=%2212%22 r=%224%22/></svg>'">
+                <img class="song-art" src="${escapeHtml(art)}" alt="${escapeHtml(title)}" loading="lazy" decoding="async" fetchpriority="low" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2276%22 height=%2276%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23888%22 stroke-width=%222%22><rect width=%2218%22 height=%2218%22 x=%223%22 y=%223%22 rx=%222%22/><circle cx=%2212%22 cy=%2212%22 r=%224%22/></svg>'">
                 <div class="play-overlay">▶</div>
               </div>
               <div class="song-details" onclick="playSongAt(${idx})" style="cursor:pointer;">
@@ -4321,6 +4330,7 @@
 
       function renderLoop() {
         visualizerAnimId = requestAnimationFrame(renderLoop);
+        if (document.hidden) return; // Save CPU & battery when screen locked or backgrounded
         
         if (!globalAudio.paused) {
           let data = null;
@@ -5701,6 +5711,22 @@
       }
     }
 
+    // High-Speed Pre-Buffering Engine (Zero-Latency Track Transition)
+    let prebufferAudioEngine = null;
+    function prebufferNextTrack(nextSong) {
+      if (!nextSong) return;
+      const nextUrl = nextSong.audioUrl || nextSong.url320 || nextSong.audioUrl160 || nextSong.url160;
+      if (!nextUrl) return;
+      try {
+        if (!prebufferAudioEngine) {
+          prebufferAudioEngine = new Audio();
+          prebufferAudioEngine.volume = 0;
+          prebufferAudioEngine.preload = 'auto';
+        }
+        prebufferAudioEngine.src = nextUrl;
+      } catch(e) {}
+    }
+
     // ==================== STICKY PLAYER & LOCK SCREEN ====================
     function playSongAt(idx) {
       if (!currentQueue[idx]) return;
@@ -5760,6 +5786,11 @@
 
       // 3. Save to Recently Played
       addToRecentlyPlayed(song);
+
+      // High-Speed Pre-Buffering: Silently prime next track in queue for 0.00s instant switching
+      if (currentQueue[idx + 1]) {
+        prebufferNextTrack(currentQueue[idx + 1]);
+      }
 
       // 4. Update Lyrics modal if active
       if (document.getElementById('lyricsModal') && document.getElementById('lyricsModal').style.display === 'flex') {

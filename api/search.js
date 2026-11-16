@@ -2,6 +2,29 @@ const CryptoJS = require('crypto-js');
 
 const DES_KEY = CryptoJS.enc.Utf8.parse('38346591');
 
+// High-Performance In-Memory LRU Cache for Ultra-Fast repeat responses (<5ms)
+const searchMemoryCache = new Map();
+const MAX_CACHE_SIZE = 400;
+const CACHE_TTL_MS = 25 * 60 * 1000; // 25 minutes TTL
+
+function getCache(key) {
+  const item = searchMemoryCache.get(key);
+  if (!item) return null;
+  if (Date.now() - item.time > CACHE_TTL_MS) {
+    searchMemoryCache.delete(key);
+    return null;
+  }
+  return item.data;
+}
+
+function setCache(key, data) {
+  if (searchMemoryCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = searchMemoryCache.keys().next().value;
+    searchMemoryCache.delete(oldestKey);
+  }
+  searchMemoryCache.set(key, { data, time: Date.now() });
+}
+
 function decryptMediaUrl(encryptedMediaUrl) {
   if (!encryptedMediaUrl) return null;
   try {
@@ -76,14 +99,22 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  const query = req.query.q;
-  if (!query) {
+  const query = (req.query && req.query.q) || '';
+  if (!query || !query.trim()) {
     return res.status(400).json({ error: 'Missing query parameter q' });
+  }
+
+  const cacheKey = query.trim().toLowerCase();
+  const cached = getCache(cacheKey);
+  if (cached) {
+    res.setHeader('X-Edge-Cache', 'HIT');
+    return res.status(200).json(cached);
   }
 
   try {
@@ -134,12 +165,22 @@ module.exports = async (req, res) => {
 
     if (results.length === 0) {
       const fallback = await searchItunesFallback(query);
-      return res.status(200).json({ results: fallback, fallback: true });
+      const payload = { results: fallback, fallback: true };
+      setCache(cacheKey, payload);
+      res.setHeader('X-Edge-Cache', 'MISS');
+      return res.status(200).json(payload);
     }
 
-    return res.status(200).json({ results, fallback: false });
+    const payload = { results, fallback: false };
+    setCache(cacheKey, payload);
+    res.setHeader('X-Edge-Cache', 'MISS');
+    return res.status(200).json(payload);
   } catch (error) {
     const fallback = await searchItunesFallback(query);
-    return res.status(200).json({ results: fallback, fallback: true, error: error.message });
+    const payload = { results: fallback, fallback: true, error: error.message };
+    if (fallback.length > 0) {
+      setCache(cacheKey, payload);
+    }
+    return res.status(200).json(payload);
   }
 };
