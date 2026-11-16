@@ -868,7 +868,7 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 1.1rem;
+      padding: 0.75rem 0.95rem;
       backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
@@ -876,7 +876,7 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
       transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s;
       content-visibility: auto;
-      contain-intrinsic-size: 0 110px;
+      contain-intrinsic-size: 0 88px;
       transform: translateZ(0);
       will-change: transform;
     }
@@ -889,7 +889,80 @@
     .song-header {
       display: flex;
       align-items: center;
-      gap: 0.9rem;
+      gap: 0.85rem;
+    }
+
+    .song-actions-quick {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      flex-shrink: 0;
+    }
+    .btn-quick-more {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: background 0.18s, transform 0.15s;
+      letter-spacing: -1.5px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-quick-more:active {
+      transform: scale(0.9);
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    /* Song Options Action Sheet */
+    .opt-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 0.65rem 0.85rem;
+      color: #fff;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.16s ease, transform 0.14s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .opt-menu-item:hover, .opt-menu-item:active {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateX(3px);
+    }
+    .opt-icon {
+      font-size: 1.35rem;
+      width: 32px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .opt-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .opt-label {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #fff;
+    }
+    .opt-sub {
+      font-size: 0.72rem;
+      color: #94a3af;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .art-wrapper {
@@ -2777,7 +2850,7 @@
   </div>
 
   <header>
-    <div class="badge">🔥 320KBPS FULL SONGS • LOCAL PLAYLISTS</div>
+    <div class="badge" onclick="openWelcomeTour(true)" style="cursor:pointer;" title="Tap to see Feature Tour">🔥 320KBPS FULL SONGS • ❓ TOUR & GUIDE</div>
     <h1>Music Downloader Pro</h1>
     <p class="subtitle">Search, stream, create offline playlists & download full 320kbps tracks</p>
   </header>
@@ -2798,6 +2871,9 @@
     </button>
     <button class="view-tab" id="tabSettings" onclick="openSettingsModal()" title="Settings & Reset">
       ⚙️ Settings
+    </button>
+    <button class="view-tab" id="tabGuide" onclick="openWelcomeTour(true)" title="Feature Tour & Guide">
+      ❓ Guide
     </button>
   </div>
 
@@ -2956,6 +3032,25 @@
         </button>
       </div>
       <div id="playlistTracksList"></div>
+    </div>
+
+    <!-- ✈️ True Offline Downloads Box (IndexedDB) -->
+    <div class="offline-downloads-box" id="offlineDownloadsBox" style="margin-top:1.8rem; background:rgba(16, 185, 129, 0.08); border:1px solid rgba(16, 185, 129, 0.25); border-radius:18px; padding:1.2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem; flex-wrap:wrap; gap:0.5rem;">
+        <div style="display:flex; align-items:center; gap:0.6rem;">
+          <span style="font-size:1.6rem;">✈️</span>
+          <div>
+            <div style="font-weight:800; color:#fff; font-size:1.05rem;">Offline Saved Songs</div>
+            <div style="font-size:0.75rem; color:#a7f3d0;" id="offlineCountLabel">Play anytime with zero internet or in Airplane Mode</div>
+          </div>
+        </div>
+        <button class="btn-action-pill" onclick="playAllOfflineTracks()" id="btnPlayAllOffline" style="display:none; border-color:#10b981; color:#10b981; font-weight:700;">
+          ▶️ Play All Offline
+        </button>
+      </div>
+      <div id="offlineSongsList" style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.8rem;">
+        <div style="font-size:0.82rem; color:#94a3af; text-align:center; padding:1rem 0;">No songs saved offline yet. Tap ⚡ Offline on any song to save it!</div>
+      </div>
     </div>
   </div>
 
@@ -3118,6 +3213,18 @@
 
     <!-- Quick Action Bar -->
     <div class="expanded-actions-dock">
+      <button class="exp-dock-btn" onclick="openStoryCardModal()" title="Create WhatsApp / Instagram Story Image">
+        <span class="dock-icon">📸</span>
+        <span class="dock-label">Story Card</span>
+      </button>
+      <button class="exp-dock-btn" onclick="shareCurrentSong()" title="Share Direct Song Link to WhatsApp">
+        <span class="dock-icon">🔗</span>
+        <span class="dock-label">Share</span>
+      </button>
+      <button class="exp-dock-btn" onclick="saveCurrentSongOffline()" title="Save Song for Offline Airplane Mode">
+        <span class="dock-icon" id="dockOfflineIcon">⚡</span>
+        <span class="dock-label" id="dockOfflineLabel">Offline</span>
+      </button>
       <button class="exp-dock-btn" onclick="openLyricsModal()">
         <span class="dock-icon">📜</span>
         <span class="dock-label">Lyrics</span>
@@ -3134,6 +3241,165 @@
         <span class="dock-icon">•••</span>
         <span class="dock-label">Studio</span>
       </button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: INSTAGRAM & WHATSAPP STORY CARD ==================== -->
+  <div class="modal-overlay" id="storyCardModal" style="display:none;">
+    <div class="modal-box" style="max-width: 440px; text-align:center;">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+        <span>📸 Story Card Generator</span>
+        <button class="btn-close-modal" onclick="closeStoryCardModal()">✕</button>
+      </div>
+      <p style="font-size:0.82rem; color:#94a3af; margin-bottom:0.9rem;">
+        Share this aesthetic music card to your WhatsApp Status or Instagram Stories!
+      </p>
+      
+      <!-- Canvas Preview Container -->
+      <div style="display:flex; justify-content:center; margin-bottom:1rem;">
+        <canvas id="storyCanvas" width="720" height="1280" style="width:230px; height:408px; border-radius:18px; box-shadow:0 12px 36px rgba(0,0,0,0.7); border:1px solid rgba(255,255,255,0.12); background:#0b0f19;"></canvas>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex; flex-direction:column; gap:0.6rem;">
+        <button class="btn-setting-action" onclick="downloadStoryCardImage()" style="background:#38bdf8; color:#0f172a; font-weight:800; font-size:0.95rem; border:none; padding:0.75rem;">
+          📥 Save Image to Photos
+        </button>
+        <button class="btn-setting-action" onclick="shareStoryCardToWhatsApp()" style="background:#25D366; color:#ffffff; font-weight:800; font-size:0.95rem; border:none; padding:0.75rem;">
+          📲 Share on WhatsApp Status
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: 1-TIME WELCOME FEATURE TOUR ==================== -->
+  <div class="modal-overlay" id="welcomeTourModal" style="display:none;" onclick="if(event.target===this) closeWelcomeTour()">
+    <div class="modal-box welcome-tour-box" style="max-width: 440px; border-radius: 28px; padding: 1.6rem; text-align: center; background: linear-gradient(180deg, #111827 0%, #080d1a 100%); border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 20px 60px rgba(0,0,0,0.85);">
+      <div style="width: 58px; height: 58px; border-radius: 50%; background: radial-gradient(circle, #38bdf8, #8b5cf6); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 0.8rem; box-shadow: 0 0 24px rgba(56, 189, 248, 0.5);">
+        🎵
+      </div>
+      <h2 style="font-size: 1.45rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem;">Welcome to MusicPro</h2>
+      <p style="font-size: 0.82rem; color: #38bdf8; font-weight: 700; margin-bottom: 1.2rem;">
+        100% Free • Studio 320kbps • Zero Ads
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 0.8rem; text-align: left; margin-bottom: 1.4rem;">
+        <div style="display: flex; gap: 0.8rem; align-items: flex-start; background: rgba(255,255,255,0.03); border-radius: 14px; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.06);">
+          <span style="font-size: 1.5rem; line-height: 1;">🔒</span>
+          <div>
+            <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Screen-Locked Background Play</div>
+            <div style="font-size: 0.75rem; color: #94a3af;">Lock your iPhone or switch apps — music never stops with full lock-screen controls.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; align-items: flex-start; background: rgba(255,255,255,0.03); border-radius: 14px; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.06);">
+          <span style="font-size: 1.5rem; line-height: 1;">📱</span>
+          <div>
+            <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Apple Music Player & Swipe Gestures</div>
+            <div style="font-size: 0.75rem; color: #94a3af;">Tap or swipe up on the bottom bar for the full player. Swipe left/right on mini-player to skip tracks!</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; align-items: flex-start; background: rgba(255,255,255,0.03); border-radius: 14px; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.06);">
+          <span style="font-size: 1.5rem; line-height: 1;">🎤</span>
+          <div>
+            <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Karaoke & 30-Sec Ringtone Maker</div>
+            <div style="font-size: 0.75rem; color: #94a3af;">Mute vocals for karaoke, cut 30s ringtones for reels, or trigger 8D spatial audio.</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.8rem; align-items: flex-start; background: rgba(255,255,255,0.03); border-radius: 14px; padding: 0.75rem 0.9rem; border: 1px solid rgba(255,255,255,0.06);">
+          <span style="font-size: 1.5rem; line-height: 1;">✈️</span>
+          <div>
+            <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Offline Airplane Mode & WhatsApp Cards</div>
+            <div style="font-size: 0.75rem; color: #94a3af;">Tap ••• on any song to save for offline listening or create an aesthetic story card for WhatsApp Status!</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-setting-action" onclick="closeWelcomeTour()" style="background: linear-gradient(135deg, #38bdf8, #8b5cf6); color: #fff; font-weight: 800; font-size: 1rem; border: none; padding: 0.85rem; border-radius: 16px; width: 100%; box-shadow: 0 8px 24px rgba(56, 189, 248, 0.4); cursor: pointer;">
+        Start Listening 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: SONG OPTIONS SHEET (APPLE/SPOTIFY 3-DOT) ==================== -->
+  <div class="modal-overlay" id="songOptionsModal" style="display:none;" onclick="if(event.target===this) closeSongOptionsModal()">
+    <div class="modal-box song-options-box" style="max-width: 420px; border-radius: 24px; padding: 1.3rem;">
+      <div style="display:flex; align-items:center; gap:0.9rem; margin-bottom:1.1rem; padding-bottom:0.9rem; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <img id="optSongArt" src="" style="width:52px; height:52px; border-radius:12px; object-fit:cover; background:#1e293b;" />
+        <div style="flex:1; min-width:0; text-align:left;">
+          <div id="optSongTitle" style="font-weight:800; font-size:1.02rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Song Title</div>
+          <div id="optSongArtist" style="font-size:0.8rem; color:#38bdf8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Artist</div>
+        </div>
+        <button class="btn-close-modal" onclick="closeSongOptionsModal()" style="font-size:1.1rem; padding:0.2rem 0.5rem;">✕</button>
+      </div>
+
+      <div class="options-menu-list" style="display:flex; flex-direction:column; gap:0.45rem;">
+        <button class="opt-menu-item" onclick="optActionPlay()">
+          <span class="opt-icon">▶️</span>
+          <div class="opt-text">
+            <div class="opt-label">Play Now</div>
+            <div class="opt-sub">Start 320kbps studio stream</div>
+          </div>
+        </button>
+
+        <button class="opt-menu-item" onclick="optActionDownload()">
+          <span class="opt-icon">📥</span>
+          <div class="opt-text">
+            <div class="opt-label">Download MP3</div>
+            <div class="opt-sub">320kbps HD Master Audio file</div>
+          </div>
+        </button>
+
+        <button class="opt-menu-item" onclick="optActionOffline()">
+          <span class="opt-icon">⚡</span>
+          <div class="opt-text">
+            <div class="opt-label">Save for Offline</div>
+            <div class="opt-sub">Listen anytime in Airplane Mode</div>
+          </div>
+        </button>
+
+        <button class="opt-menu-item" onclick="optActionRingtone()">
+          <span class="opt-icon">✂️</span>
+          <div class="opt-text">
+            <div class="opt-label">Cut 30-Sec Ringtone / Reel</div>
+            <div class="opt-sub">Drag and cut the best drop</div>
+          </div>
+        </button>
+
+        <button class="opt-menu-item" onclick="optActionStoryCard()">
+          <span class="opt-icon">📸</span>
+          <div class="opt-text">
+            <div class="opt-label">Create Story Card</div>
+            <div class="opt-sub">Post aesthetic visual to WhatsApp / Insta</div>
+          </div>
+        </button>
+
+        <button class="opt-menu-item" onclick="optActionShare()">
+          <span class="opt-icon">🔗</span>
+          <div class="opt-text">
+            <div class="opt-label">Share Direct Song Link</div>
+            <div class="opt-sub">Link that plays instantly on click</div>
+          </div>
+        </button>
+
+        <button class="opt-menu-item" onclick="optActionPlaylist()">
+          <span class="opt-icon">➕</span>
+          <div class="opt-text">
+            <div class="opt-label">Add to Playlist</div>
+            <div class="opt-sub">Save into custom music folders</div>
+          </div>
+        </button>
+
+        <button class="opt-menu-item" onclick="optActionMagicMix()">
+          <span class="opt-icon">✨</span>
+          <div class="opt-text">
+            <div class="opt-label">Magic Radio Mix</div>
+            <div class="opt-sub">Find 10 matching songs in this vibe</div>
+          </div>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -4088,43 +4354,21 @@
                 <div class="play-overlay">▶</div>
               </div>
               <div class="song-details" onclick="playSongAt(${idx})" style="cursor:pointer;">
-                <div class="title-row">
-                  <div class="song-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
-                  <button class="btn-fav ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${idx}, this)" title="Favorite">
-                    ${isFav ? '❤️' : '🤍'}
-                  </button>
-                </div>
+                <div class="song-title" title="${escapeHtml(title)}">${escapeHtml(title)}</div>
                 <div class="song-artist" title="${escapeHtml(artist)}">${escapeHtml(artist)}</div>
                 <div class="song-meta">
                   ${escapeHtml(album)}${year}${dur}
                   <span class="tag-full">320kbps</span>
                 </div>
               </div>
-            </div>
-
-            <div class="card-actions">
-              <div class="download-group">
-                <button class="btn-download" onclick="downloadSelectedQuality(${idx})">
-                  📥 Download
+              <div class="song-actions-quick">
+                <button class="btn-fav ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${idx}, this)" title="Favorite">
+                  ${isFav ? '❤️' : '🤍'}
                 </button>
-                <select class="quality-select" id="quality_${idx}">
-                  <option value="320">320k (HD)</option>
-                  <option value="160">160k (Med)</option>
-                  <option value="96">96k (Fast)</option>
-                </select>
+                <button class="btn-quick-more" onclick="event.stopPropagation(); openSongOptionsModal(${idx})" title="Download, Offline, Ringtone & Share">
+                  •••
+                </button>
               </div>
-
-              <button class="btn-icon-action" onclick="openAddToPlaylistModal(${idx})">
-                ➕ Playlist
-              </button>
-
-              <button class="btn-icon-action" onclick="shareSong(${idx})">
-                ↗️ Share
-              </button>
-
-              <button class="btn-icon-action" onclick="loadMagicMix(${idx})" title="Auto-find 10 matching songs">
-                ✨ Mix
-              </button>
             </div>
           </div>
         `;
@@ -6123,20 +6367,462 @@
       }
     }
 
+    // ==================== VIRAL DIRECT SHARING & DEEP LINKING ====================
     function shareSong(idx) {
-      const song = currentQueue[idx];
-      if (!song) return;
-      const shareData = {
-        title: `${song.title} - ${song.artist}`,
-        text: `Listen & download "${song.title}" in 320kbps HD Audio!`,
-        url: window.location.href
-      };
+      const song = (idx !== undefined && currentQueue[idx]) ? currentQueue[idx] : currentQueue[currentTrackIndex];
+      if (!song) {
+        showToast('No song selected to share', 'ℹ️');
+        return;
+      }
+      const shareQuery = encodeURIComponent(song.title + (song.artist ? ' ' + song.artist.split(',')[0].trim() : ''));
+      const shareUrl = `${window.location.origin}/?song=${shareQuery}`;
+      const shareText = `🔥 Listen to "${song.title}" (${song.artist || ''}) in 320kbps HD Studio Quality! No Ads, 100% Free with iPhone/Android Background Play:`;
 
       if (navigator.share) {
-        navigator.share(shareData).catch(() => {});
+        navigator.share({
+          title: `${song.title} - ${song.artist}`,
+          text: shareText,
+          url: shareUrl
+        }).catch(() => {});
       } else {
-        const text = encodeURIComponent(`Listen & download "${song.title}" by ${song.artist} on Music Downloader: ${window.location.href}`);
-        window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(`${shareText}\n${shareUrl}`).then(() => {
+            showToast('📋 Direct song link copied! Paste on WhatsApp / Insta', '🔗');
+          }).catch(() => {
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`, '_blank');
+          });
+        } else {
+          window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + '\n' + shareUrl)}`, '_blank');
+        }
+      }
+    }
+
+    function shareCurrentSong() {
+      shareSong(currentTrackIndex);
+    }
+
+    // ==================== INSTAGRAM & WHATSAPP STORY CARD GENERATOR ====================
+    function openStoryCardModal() {
+      const modal = document.getElementById('storyCardModal');
+      if (modal) modal.style.display = 'flex';
+      setTimeout(renderStoryCardCanvas, 120);
+    }
+
+    function closeStoryCardModal() {
+      const modal = document.getElementById('storyCardModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function renderStoryCardCanvas() {
+      const canvas = document.getElementById('storyCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const song = (currentTrackIndex >= 0 && currentQueue[currentTrackIndex]) ? currentQueue[currentTrackIndex] : {
+        title: 'Music Downloader Pro',
+        artist: 'Studio Quality Audio',
+        artwork: ''
+      };
+
+      const w = canvas.width; // 720
+      const h = canvas.height; // 1280
+
+      // 1. Dark Modern Gradient Background
+      const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+      bgGrad.addColorStop(0, '#090d16');
+      bgGrad.addColorStop(0.5, '#111827');
+      bgGrad.addColorStop(1, '#05070c');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // 2. Ambient Aesthetic Glow Orbs
+      ctx.save();
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+      ctx.beginPath();
+      ctx.arc(200, 320, 180, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(168, 85, 247, 0.25)';
+      ctx.beginPath();
+      ctx.arc(520, 760, 200, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // 3. Central Glassmorphism Card
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 2;
+      drawRoundRect(ctx, 60, 140, 600, 1000, 32);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      // 4. Draw Album Artwork
+      const artImg = new Image();
+      artImg.crossOrigin = 'anonymous';
+      artImg.onload = () => {
+        ctx.save();
+        drawRoundRect(ctx, 110, 190, 500, 500, 24);
+        ctx.clip();
+        ctx.drawImage(artImg, 110, 190, 500, 500);
+        ctx.restore();
+        drawStoryDetails();
+      };
+      artImg.onerror = () => {
+        ctx.fillStyle = '#1e293b';
+        drawRoundRect(ctx, 110, 190, 500, 500, 24);
+        ctx.fill();
+        ctx.font = '100px sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎵', 360, 470);
+        drawStoryDetails();
+      };
+      artImg.src = song.artwork || song.imageHigh || song.imageMed || '';
+
+      function drawStoryDetails() {
+        // Song Title
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        let displayTitle = song.title || 'Unknown Title';
+        if (displayTitle.length > 25) displayTitle = displayTitle.substring(0, 23) + '...';
+        ctx.fillText(displayTitle, 360, 760);
+
+        // Artist Name
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '600 24px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        let displayArtist = song.artist || 'Artist';
+        if (displayArtist.length > 32) displayArtist = displayArtist.substring(0, 30) + '...';
+        ctx.fillText(displayArtist, 360, 805);
+
+        // Equalizer Bars Waveform Graphic
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.75)';
+        const barCount = 28;
+        const barWidth = 6;
+        const spacing = 12;
+        const startX = 360 - ((barCount * (barWidth + spacing)) / 2);
+        for (let i = 0; i < barCount; i++) {
+          const barH = 14 + Math.sin(i * 0.45) * 26 + Math.cos(i * 0.75) * 16;
+          ctx.fillRect(startX + i * (barWidth + spacing), 875 - barH / 2, barWidth, barH);
+        }
+
+        // Verified Master Badge
+        ctx.save();
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1.5;
+        drawRoundRect(ctx, 210, 930, 300, 48, 24);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillText('🎧 320kbps Studio Master', 360, 960);
+
+        // Bottom Watermark & Call To Action
+        ctx.fillStyle = '#94a3af';
+        ctx.font = '18px sans-serif';
+        ctx.fillText('Stream Free • No Ads • Background Play', 360, 1060);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.fillText('musicpro-six.vercel.app', 360, 1100);
+      }
+
+      function drawRoundRect(c, x, y, width, height, radius) {
+        c.beginPath();
+        c.moveTo(x + radius, y);
+        c.lineTo(x + width - radius, y);
+        c.quadraticCurveTo(x + width, y, x + width, y + radius);
+        c.lineTo(x + width, y + height - radius);
+        c.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        c.lineTo(x + radius, y + height);
+        c.quadraticCurveTo(x, y + height, x, y + height - radius);
+        c.lineTo(x, y + radius);
+        c.quadraticCurveTo(x, y, x + radius, y);
+        c.closePath();
+      }
+    }
+
+    function downloadStoryCardImage() {
+      const canvas = document.getElementById('storyCanvas');
+      if (!canvas) return;
+      const song = currentQueue[currentTrackIndex];
+      const cleanTitle = (song && song.title ? song.title.replace(/[^a-zA-Z0-9]/g, '_') : 'music');
+      const a = document.createElement('a');
+      a.download = `${cleanTitle}_story.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      showToast('📥 Story card image saved! Post to WhatsApp Status', '✅');
+    }
+
+    function shareStoryCardToWhatsApp() {
+      const song = currentQueue[currentTrackIndex];
+      if (!song) return;
+      const shareQuery = encodeURIComponent(song.title + (song.artist ? ' ' + song.artist.split(',')[0].trim() : ''));
+      const shareUrl = `${window.location.origin}/?song=${shareQuery}`;
+      const text = `🔥 Check out "${song.title}" on MusicPro (320kbps HD Audio, No Ads & Background Play!):\n${shareUrl}`;
+
+      downloadStoryCardImage();
+      setTimeout(() => {
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+      }, 500);
+    }
+
+    // ==================== TRUE OFFLINE MODE (INDEXEDDB CACHING) ====================
+    const OFFLINE_DB_NAME = 'MusicProOfflineStorage';
+    const OFFLINE_DB_VERSION = 1;
+    const OFFLINE_STORE_NAME = 'offline_songs';
+
+    function openOfflineDb() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(OFFLINE_DB_NAME, OFFLINE_DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(OFFLINE_STORE_NAME)) {
+            db.createObjectStore(OFFLINE_STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function saveCurrentSongOffline() {
+      saveSongOffline(currentTrackIndex);
+    }
+
+    async function saveSongOffline(idx) {
+      const song = (idx !== undefined && currentQueue[idx]) ? currentQueue[idx] : currentQueue[currentTrackIndex];
+      if (!song) return showToast('No song selected to save offline', 'ℹ️');
+      const audioUrl = song.audioUrl || song.url320 || song.audioUrl160;
+      if (!audioUrl) return showToast('No audio source found', '⚠️');
+
+      showToast(`⚡ Saving "${song.title}" for offline playback...`, '⏳');
+      try {
+        const audioRes = await fetch(audioUrl);
+        const audioBlob = await audioRes.blob();
+
+        let artBlob = null;
+        const artUrl = song.artwork || song.imageHigh || song.imageMed;
+        if (artUrl) {
+          try {
+            const artRes = await fetch(artUrl);
+            artBlob = await artRes.blob();
+          } catch(e) {}
+        }
+
+        const songRecord = {
+          id: String(song.id || (song.title + '_' + song.artist)),
+          title: song.title,
+          artist: song.artist,
+          album: song.album || 'Offline Downloads',
+          duration: song.duration || '',
+          audioBlob: audioBlob,
+          artBlob: artBlob,
+          savedAt: Date.now()
+        };
+
+        const db = await openOfflineDb();
+        const tx = db.transaction(OFFLINE_STORE_NAME, 'readwrite');
+        tx.objectStore(OFFLINE_STORE_NAME).put(songRecord);
+        tx.oncomplete = () => {
+          showToast(`✈️ "${song.title}" saved! Works anytime in Airplane Mode`, '✅');
+          renderOfflineLibrary();
+        };
+      } catch (err) {
+        console.warn('Offline save error:', err);
+        showToast('Offline save failed: ' + err.message, '⚠️');
+      }
+    }
+
+    async function renderOfflineLibrary() {
+      const listContainer = document.getElementById('offlineSongsList');
+      const countLabel = document.getElementById('offlineCountLabel');
+      const playAllBtn = document.getElementById('btnPlayAllOffline');
+      if (!listContainer) return;
+
+      try {
+        const db = await openOfflineDb();
+        const tx = db.transaction(OFFLINE_STORE_NAME, 'readonly');
+        const req = tx.objectStore(OFFLINE_STORE_NAME).getAll();
+        req.onsuccess = () => {
+          const songs = req.result || [];
+          if (songs.length === 0) {
+            listContainer.innerHTML = `
+              <div style="font-size:0.82rem; color:#94a3af; text-align:center; padding:1rem 0;">
+                No songs saved offline yet. Tap ⚡ Offline on any song to listen without internet!
+              </div>
+            `;
+            if (countLabel) countLabel.textContent = 'Play anytime without internet';
+            if (playAllBtn) playAllBtn.style.display = 'none';
+            return;
+          }
+
+          if (countLabel) countLabel.textContent = `${songs.length} Track${songs.length > 1 ? 's' : ''} Ready for Airplane Mode`;
+          if (playAllBtn) playAllBtn.style.display = 'inline-block';
+
+          listContainer.innerHTML = songs.map((s) => {
+            const artUrl = s.artBlob ? URL.createObjectURL(s.artBlob) : '';
+            return `
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.04); border-radius:12px; padding:0.6rem 0.8rem; border:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex; align-items:center; gap:0.75rem; cursor:pointer; flex:1; min-width:0;" onclick="playOfflineTrack('${escapeHtml(s.id)}')">
+                  <div style="width:42px; height:42px; border-radius:8px; overflow:hidden; background:#1e293b; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    ${artUrl ? `<img src="${artUrl}" style="width:100%; height:100%; object-fit:cover;" />` : '🎵'}
+                  </div>
+                  <div style="min-width:0; flex:1;">
+                    <div style="font-weight:700; font-size:0.88rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(s.title)}</div>
+                    <div style="font-size:0.75rem; color:#94a3af; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(s.artist)}</div>
+                  </div>
+                </div>
+                <div style="display:flex; gap:0.4rem; align-items:center;">
+                  <button class="btn-icon-action" onclick="playOfflineTrack('${escapeHtml(s.id)}')" style="color:#10b981; border-color:#10b981; padding:0.35rem 0.6rem; font-size:0.8rem;">
+                    ▶️
+                  </button>
+                  <button class="btn-icon-action" onclick="deleteOfflineTrack('${escapeHtml(s.id)}')" style="color:#ef4444; border-color:rgba(239,68,68,0.4); padding:0.35rem 0.6rem; font-size:0.8rem;" title="Remove from offline storage">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        };
+      } catch (err) {
+        console.warn('Error reading offline songs:', err);
+      }
+    }
+
+    async function playOfflineTrack(id) {
+      try {
+        const db = await openOfflineDb();
+        const tx = db.transaction(OFFLINE_STORE_NAME, 'readonly');
+        const req = tx.objectStore(OFFLINE_STORE_NAME).get(id);
+        req.onsuccess = () => {
+          const item = req.result;
+          if (!item) return showToast('Song not found in offline storage', '⚠️');
+          const localAudioUrl = URL.createObjectURL(item.audioBlob);
+          const localArtUrl = item.artBlob ? URL.createObjectURL(item.artBlob) : '';
+
+          const offlineSongObj = {
+            id: item.id,
+            title: item.title,
+            artist: item.artist,
+            album: item.album || 'Offline Downloads',
+            duration: item.duration || '',
+            artwork: localArtUrl,
+            audioUrl: localAudioUrl,
+            url320: localAudioUrl,
+            isFullSong: true,
+            isOffline: true
+          };
+          currentQueue = [offlineSongObj];
+          playSongAt(0);
+          showToast(`✈️ Playing offline: "${item.title}"`, '🎵');
+        };
+      } catch (err) {
+        showToast('Playback error: ' + err.message, '⚠️');
+      }
+    }
+
+    async function playAllOfflineTracks() {
+      try {
+        const db = await openOfflineDb();
+        const tx = db.transaction(OFFLINE_STORE_NAME, 'readonly');
+        const req = tx.objectStore(OFFLINE_STORE_NAME).getAll();
+        req.onsuccess = () => {
+          const songs = req.result || [];
+          if (!songs.length) return showToast('No offline songs available', 'ℹ️');
+
+          currentQueue = songs.map(s => ({
+            id: s.id,
+            title: s.title,
+            artist: s.artist,
+            album: s.album || 'Offline Downloads',
+            duration: s.duration || '',
+            artwork: s.artBlob ? URL.createObjectURL(s.artBlob) : '',
+            audioUrl: URL.createObjectURL(s.audioBlob),
+            url320: URL.createObjectURL(s.audioBlob),
+            isFullSong: true,
+            isOffline: true
+          }));
+
+          playSongAt(0);
+          showToast(`✈️ Playing ${currentQueue.length} offline tracks!`, '▶️');
+        };
+      } catch(e) {}
+    }
+
+    async function deleteOfflineTrack(id) {
+      try {
+        const db = await openOfflineDb();
+        const tx = db.transaction(OFFLINE_STORE_NAME, 'readwrite');
+        tx.objectStore(OFFLINE_STORE_NAME).delete(id);
+        tx.oncomplete = () => {
+          showToast('Track removed from offline storage', '🗑️');
+          renderOfflineLibrary();
+        };
+      } catch (err) {
+        showToast('Delete error: ' + err.message, '⚠️');
+      }
+    }
+
+    // ==================== MINI-PLAYER TOUCH GESTURES (SWIPE ENGINE) ====================
+    function initTouchGestures() {
+      const miniPlayer = document.getElementById('stickyPlayer');
+      const expandedSheet = document.getElementById('expandedPlayerSheet');
+      let startX = 0, startY = 0, startT = 0;
+
+      if (miniPlayer) {
+        miniPlayer.addEventListener('touchstart', (e) => {
+          if (['INPUT', 'BUTTON'].includes(e.target.tagName)) return;
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          startT = Date.now();
+        }, { passive: true });
+
+        miniPlayer.addEventListener('touchend', (e) => {
+          if (['INPUT', 'BUTTON'].includes(e.target.tagName)) return;
+          const endX = e.changedTouches[0].clientX;
+          const endY = e.changedTouches[0].clientY;
+          const deltaX = endX - startX;
+          const deltaY = endY - startY;
+          const elapsed = Date.now() - startT;
+
+          if (elapsed > 650) return; // Ignore long presses
+
+          // Horizontal Swipe (Next / Prev Track)
+          if (Math.abs(deltaX) > 48 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+            if (deltaX < 0) {
+              playNextSong();
+              showToast('⏭️ Next Track', '🎵');
+            } else {
+              playPrevSong();
+              showToast('⏮️ Previous Track', '🎵');
+            }
+          }
+          // Vertical Swipe Up (Open Fullscreen Player)
+          else if (deltaY < -42 && Math.abs(deltaY) > Math.abs(deltaX)) {
+            openExpandedPlayer();
+          }
+        }, { passive: true });
+      }
+
+      if (expandedSheet) {
+        let sheetStartY = 0;
+        expandedSheet.addEventListener('touchstart', (e) => {
+          sheetStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        expandedSheet.addEventListener('touchend', (e) => {
+          const sheetEndY = e.changedTouches[0].clientY;
+          const deltaY = sheetEndY - sheetStartY;
+          // Swipe Down to Dismiss (if near top of scroll)
+          if (deltaY > 65 && expandedSheet.scrollTop <= 15) {
+            closeExpandedPlayer();
+          }
+        }, { passive: true });
       }
     }
 
@@ -6702,6 +7388,110 @@
       window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
+    // ==================== SONG OPTIONS ACTION SHEET (SPOTIFY 3-DOT) ====================
+    let selectedOptionSongIndex = -1;
+
+    function openSongOptionsModal(idx) {
+      selectedOptionSongIndex = idx;
+      const song = currentQueue[idx];
+      if (!song) return;
+
+      const modal = document.getElementById('songOptionsModal');
+      const artEl = document.getElementById('optSongArt');
+      const titleEl = document.getElementById('optSongTitle');
+      const artistEl = document.getElementById('optSongArtist');
+
+      if (artEl) artEl.src = song.artwork || song.imageHigh || song.imageMed || '';
+      if (titleEl) titleEl.textContent = song.title || 'Song';
+      if (artistEl) artistEl.textContent = song.artist || 'Artist';
+
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeSongOptionsModal() {
+      const modal = document.getElementById('songOptionsModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function optActionPlay() {
+      if (selectedOptionSongIndex >= 0) playSongAt(selectedOptionSongIndex);
+      closeSongOptionsModal();
+    }
+
+    function optActionDownload() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      if (idx >= 0) downloadSelectedQuality(idx);
+    }
+
+    function optActionOffline() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      if (idx >= 0) saveSongOffline(idx);
+    }
+
+    function optActionRingtone() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      if (idx >= 0) {
+        playSongAt(idx);
+        setTimeout(openRingtoneModal, 250);
+      }
+    }
+
+    function optActionStoryCard() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      if (idx >= 0) {
+        currentTrackIndex = idx;
+        setTimeout(openStoryCardModal, 200);
+      }
+    }
+
+    function optActionShare() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      if (idx >= 0) shareSong(idx);
+    }
+
+    function optActionPlaylist() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      setTimeout(() => openAddToPlaylistModal(idx), 200);
+    }
+
+    function optActionMagicMix() {
+      const idx = selectedOptionSongIndex;
+      closeSongOptionsModal();
+      setTimeout(() => loadMagicMix(idx), 200);
+    }
+
+    // ==================== 1-TIME WELCOME FEATURE TOUR ====================
+    function checkOneTimeWelcomeTour() {
+      try {
+        const seen = localStorage.getItem('seen_musicpro_tour_v1');
+        if (!seen) {
+          setTimeout(() => {
+            openWelcomeTour();
+          }, 650);
+        }
+      } catch(e) {}
+    }
+
+    function openWelcomeTour(force = false) {
+      const modal = document.getElementById('welcomeTourModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeWelcomeTour() {
+      const modal = document.getElementById('welcomeTourModal');
+      if (modal) modal.style.display = 'none';
+      try {
+        localStorage.setItem('seen_musicpro_tour_v1', 'true');
+      } catch(e) {}
+      showToast('Welcome to MusicPro! Enjoy free music 🎵', '🚀');
+    }
+
     // Auto-detect room parameter in URL & init features
     window.addEventListener('DOMContentLoaded', () => {
       // 1. Render recently played
@@ -6738,6 +7528,31 @@
       // 7. Initialize URL Hash Routing (#radio, #playlists, #settings, #search)
       if (window.location.hash) {
         handleHashRouting();
+      }
+
+      // 8. Initialize Touch Gestures (Swipe Mini-Player to Next/Prev or Fullscreen)
+      initTouchGestures();
+
+      // 9. Render Saved Offline Songs from IndexedDB
+      renderOfflineLibrary();
+
+      // 10. Check 1-Time Welcome Feature Tour
+      checkOneTimeWelcomeTour();
+
+      // 11. Deep-Link Auto-Play from URL (?song=... or ?play=...)
+      const sharedSong = params.get('song') || params.get('play');
+      if (sharedSong && sharedSong.trim()) {
+        const query = decodeURIComponent(sharedSong.trim());
+        const sInput = document.getElementById('searchInput');
+        if (sInput) sInput.value = query;
+        switchNavTab('search');
+        showToast(`🔍 Loading shared song: "${query}"...`, '⏳');
+        searchSongs(query).then(() => {
+          if (currentQueue && currentQueue.length > 0) {
+            playSongAt(0);
+            showToast(`🎵 Now Playing: ${currentQueue[0].title}`, '▶️');
+          }
+        });
       }
     });
 
