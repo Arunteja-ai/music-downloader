@@ -6,14 +6,21 @@ const url = require('url');
 const searchHandler = require('./api/search');
 const suggestHandler = require('./api/suggest');
 
-let cachedHtml = null;
-function getHtml() {
-  try {
-    return fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-  } catch (e) {
-    return '<!DOCTYPE html><html><body>Error loading index.html</body></html>';
-  }
-}
+const publicDir = path.resolve(__dirname, 'public');
+const contentTypes = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.ico': 'image/x-icon',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8'
+};
 
 function handler(req, res) {
   const parsedUrl = url.parse(req.url, true);
@@ -47,21 +54,30 @@ function handler(req, res) {
     return res.status(200).json({ status: 'ok', timestamp: Date.now() });
   }
 
-  // Check if static file exists (e.g. favicon, manifest, etc.)
-  if (pathname !== '/') {
-    const safePath = path.join(__dirname, path.normalize(pathname).replace(/^(\.\.[\/\\])+/, ''));
-    if (fs.existsSync(safePath) && fs.statSync(safePath).isFile() && !pathname.includes('node_modules')) {
-      return fs.createReadStream(safePath).pipe(res);
-    }
+  let requestedPath;
+  try {
+    requestedPath = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
+  } catch (error) {
+    res.statusCode = 400;
+    return res.end('Bad request');
   }
 
-  // Serve index.html for all page routes
-  const html = getHtml();
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.end(html);
+  const filePath = path.resolve(publicDir, `.${requestedPath}`);
+  if (!filePath.startsWith(publicDir + path.sep) || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    res.statusCode = 404;
+    return res.end('Not found');
+  }
+
+  res.setHeader('Content-Type', contentTypes[path.extname(filePath).toLowerCase()] || 'application/octet-stream');
+  if (path.basename(filePath) === 'index.html') {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  fs.createReadStream(filePath).on('error', () => {
+    if (!res.headersSent) res.statusCode = 500;
+    res.end('Unable to load file');
+  }).pipe(res);
 }
 
 module.exports = handler;

@@ -1,5 +1,5 @@
 // Ultra-Fast PWA Service Worker (V5 - High-Speed Cache Engine with Network-First HTML)
-const CACHE_NAME = 'musicpro-v5-cache';
+const CACHE_NAME = 'musicpro-v6-cache';
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',

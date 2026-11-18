@@ -1,4 +1,5 @@
 const CryptoJS = require('crypto-js');
+const fetchWithTimeout = require('../lib/fetch-with-timeout');
 
 const DES_KEY = CryptoJS.enc.Utf8.parse('38346591');
 
@@ -169,7 +170,8 @@ function rankTracks(tracks, query) {
 
 async function searchItunesFallback(query) {
   try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`);
+    const res = await fetchWithTimeout(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`, {}, 3000);
+    if (!res.ok) return [];
     const data = await res.json();
     if (!data.results) return [];
 
@@ -217,10 +219,17 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET, OPTIONS');
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   const query = (req.query && req.query.q) || '';
   if (!query || !query.trim()) {
     return res.status(400).json({ error: 'Missing query parameter q' });
+  }
+  if (query.length > 160) {
+    return res.status(400).json({ error: 'Search query is too long' });
   }
 
   const cacheKey = query.trim().toLowerCase();
@@ -232,11 +241,12 @@ module.exports = async (req, res) => {
 
   try {
     const saavnUrl = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&p=1&n=25&q=${encodeURIComponent(query)}`;
-    const response = await fetch(saavnUrl, {
+    const response = await fetchWithTimeout(saavnUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
-    });
+    }, 5000);
+    if (!response.ok) throw new Error(`Search provider returned ${response.status}`);
     const data = await response.json();
     let results = [];
 

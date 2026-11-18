@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Music Downloader Pro - 320kbps Full Songs & Telugu DJ Playlists</title>
   
   <!-- SEO & Google Ranking Meta -->
@@ -16,10 +16,13 @@
   <meta property="og:url" content="https://my-music-downloader.netlify.app/" />
   <meta property="og:title" content="Music Downloader Pro - 320kbps Full Songs & Telugu DJ Playlists" />
   <meta property="og:description" content="Stream & download full-length 320kbps Telugu DJ hits, mass party songs, and global music. Create custom offline folders with zero ads." />
-  <meta property="og:image" content="https://my-music-downloader.netlify.app/manifest.json" />
+  <meta property="og:image" content="https://my-music-downloader.netlify.app/share-card.svg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://my-music-downloader.netlify.app/share-card.svg" />
   <meta name="twitter:title" content="Music Downloader Pro - 320kbps Songs & Playlists" />
   <meta name="twitter:description" content="Free 320kbps full length songs, Telugu DJ party mixes, and offline playlists." />
 
@@ -459,6 +462,20 @@
     /* Curated Section */
     .curated-section {
       margin-top: 1.1rem;
+      text-align: left;
+    }
+    .curated-mobile-toggle {
+      display: none;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: #e2e8f0;
+      padding: 0.75rem 0.9rem;
+      font: inherit;
+      font-weight: 700;
       text-align: left;
     }
     .curated-label {
@@ -2833,6 +2850,10 @@
         font-size: 1rem;
         cursor: pointer;
       }
+      .curated-mobile-toggle { display: flex; }
+      .curated-section:not(.is-expanded) > .curated-label,
+      .curated-section:not(.is-expanded) > .curated-chips { display: none; }
+      .curated-section.is-expanded > .curated-label { margin-top: 0.8rem; }
     }
     @media (min-width: 769px) {
       .bottom-nav-bar {
@@ -3016,7 +3037,10 @@
       <div class="chips" id="chipsContainer"></div>
 
       <!-- Curated DJ & Viral Mixes -->
-      <div class="curated-section">
+      <div class="curated-section" id="curatedMixes">
+        <button class="curated-mobile-toggle" id="curatedMobileToggle" aria-expanded="false" aria-controls="curatedMixes" onclick="toggleMobileExplore()">
+          <span>🎧 Explore mixes & moods</span><span id="curatedMobileChevron">＋</span>
+        </button>
         <div class="curated-label">🔥 Curated DJ & Viral Mixes</div>
         <div class="curated-chips">
           <button class="curated-chip" onclick="quickCuratedSearch('Telugu DJ Remix Most Viewed Hits', 'Telugu DJ Most Viewed')">
@@ -3323,7 +3347,7 @@
       <button class="fx-pill" id="pillFxBass" onclick="toggleQuickPreset('bass')">🔊 Bass 2.0</button>
       <button class="fx-pill" id="pillFxSlowed" onclick="toggleQuickPreset('slowed')">🌙 Slowed</button>
       <button class="fx-pill" id="pillFxNightcore" onclick="toggleQuickPreset('nightcore')">⚡ Nightcore</button>
-      <button class="fx-pill active" id="pillFxInfinity" onclick="toggleInfinityAutoplay()">♾️ Autoplay: ON</button>
+      <button class="fx-pill active" id="pillFxInfinity" onclick="toggleInfinityAutoplay()" title="Automatically find and play tracks related to the current song">🎵 Similar autoplay: ON</button>
     </div>
 
     <!-- Quick Action Bar -->
@@ -3598,6 +3622,9 @@
         <button class="btn-close-modal" onclick="closeMoreToolsModal()">✕</button>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.65rem; margin-top:0.8rem;">
+        <button class="btn-setting-action" style="grid-column:span 2;" onclick="shareApp()">
+          🔗 Share this website
+        </button>
         <button class="btn-setting-action" onclick="closeMoreToolsModal(); openEqModal();">
           🎛️ Equalizer & 8D
         </button>
@@ -4297,6 +4324,16 @@
       searchSongs();
     }
 
+    function toggleMobileExplore() {
+      const section = document.getElementById('curatedMixes');
+      const button = document.getElementById('curatedMobileToggle');
+      const chevron = document.getElementById('curatedMobileChevron');
+      if (!section || !button) return;
+      const isExpanded = section.classList.toggle('is-expanded');
+      button.setAttribute('aria-expanded', String(isExpanded));
+      if (chevron) chevron.textContent = isExpanded ? '−' : '＋';
+    }
+
     function quickCuratedSearch(term, label) {
       currentSearchedLabel = label;
       searchInput.value = label;
@@ -4371,30 +4408,32 @@
         `https://lustrous-scone-848c6b.netlify.app/.netlify/functions/suggest?q=${encodeURIComponent(query)}`,
         `/.netlify/functions/suggest?q=${encodeURIComponent(query)}`
       ];
-      for (const url of endpoints) {
-        try {
-          const res = await fetchWithTimeout(url, 2200);
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.suggestions && data.suggestions.length > 0) {
-              return data.suggestions;
-            }
+      try {
+        return await Promise.any(endpoints.map(async url => {
+          const res = await fetchWithTimeout(url, 1400);
+          if (!res.ok) throw new Error('Suggestion request failed');
+          const data = await res.json();
+          if (!data || !Array.isArray(data.suggestions) || !data.suggestions.length) {
+            throw new Error('No suggestions returned');
           }
-        } catch(e) {}
+          return data.suggestions;
+        }));
+      } catch (error) {
+        return [];
       }
-      return [];
     }
 
     async function apiSearch(query) {
       const primaryEndpoint = `/api/search?q=${encodeURIComponent(query)}`;
+      let providerFailure = false;
       try {
-        const res = await fetchWithTimeout(primaryEndpoint, 2500);
+        const res = await fetchWithTimeout(primaryEndpoint, 2200);
         if (res.ok) {
           const data = await res.json();
-          if (data.providerError) return { results: [], providerError: true, error: data.error };
+          if (data.providerError) providerFailure = true;
           const list = data.results || data.songs || [];
           if (list.length > 0) return list;
-        }
+        } else providerFailure = true;
       } catch (e) {}
 
       // Parallel backup mirrors query for ultra-fast failover
@@ -4407,7 +4446,7 @@
 
       try {
         const mirrorPromises = backupEndpoints.map(url => 
-          fetchWithTimeout(url, 3000).then(async (res) => {
+          fetchWithTimeout(url, 2200).then(async (res) => {
             if (!res.ok) throw new Error('Not ok');
             const data = await res.json();
             const list = data.results || data.songs || [];
@@ -4423,7 +4462,7 @@
 
       // Universal client-side fallback if all serverless endpoints fail
       try {
-        const itunesRes = await fetchWithTimeout(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=25`, 3500);
+        const itunesRes = await fetchWithTimeout(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=25`, 2500);
         if (itunesRes.ok) {
           const itunesData = await itunesRes.json();
           if (itunesData.results && itunesData.results.length > 0) {
@@ -4446,7 +4485,9 @@
         }
       } catch (e) {}
 
-      return [];
+      return providerFailure
+        ? { results: [], providerError: true, error: 'Search services are temporarily unavailable. Please try again.' }
+        : [];
     }
 
     async function fetchSuggestions(query) {
@@ -7022,6 +7063,27 @@
       shareSong(currentTrackIndex);
     }
 
+    async function shareApp() {
+      const shareUrl = `${window.location.origin}/`;
+      const shareData = {
+        title: 'Music Downloader Pro',
+        text: 'Listen to music and build your own playlists.',
+        url: shareUrl
+      };
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(shareUrl);
+          showToast('Website link copied. Share it with friends!', '🔗');
+        } else {
+          window.prompt('Copy this website link to share it:', shareUrl);
+        }
+      } catch (error) {
+        if (error && error.name !== 'AbortError') showToast('Could not share the website link.', '⚠️');
+      }
+    }
+
     // ==================== INSTAGRAM & WHATSAPP STORY CARD GENERATOR ====================
     function openStoryCardModal() {
       const modal = document.getElementById('storyCardModal');
@@ -8181,7 +8243,7 @@
       // 11. Deep-Link Auto-Play from URL (?song=... or ?play=...)
       const sharedSong = params.get('song') || params.get('play');
       if (sharedSong && sharedSong.trim()) {
-        const query = decodeURIComponent(sharedSong.trim());
+        const query = sharedSong.trim();
         const sInput = document.getElementById('searchInput');
         if (sInput) sInput.value = query;
         switchNavTab('search');
@@ -8256,14 +8318,14 @@
       isInfinityAutoplay = !isInfinityAutoplay;
       localStorage.setItem('musicpro_infinity_autoplay', isInfinityAutoplay ? 'true' : 'false');
       updateInfinityPill();
-      showToast(isInfinityAutoplay ? '♾️ Infinity Autoplay ON: Music will never stop!' : '♾️ Infinity Autoplay OFF', '♾️');
+      showToast(isInfinityAutoplay ? 'Similar autoplay is on. Related tracks will play when the queue ends.' : 'Similar autoplay is off.', '🎵');
     }
 
     function updateInfinityPill() {
       const pill = document.getElementById('pillFxInfinity');
       if (pill) {
         pill.classList.toggle('active', isInfinityAutoplay);
-        pill.textContent = isInfinityAutoplay ? '♾️ Autoplay: ON' : '♾️ Autoplay: OFF';
+        pill.textContent = isInfinityAutoplay ? '🎵 Similar autoplay: ON' : '🎵 Similar autoplay: OFF';
       }
     }
 
@@ -8273,30 +8335,49 @@
       if (!currentSong) return;
 
       isFetchingInfinityTracks = true;
-      showToast('♾️ Infinity Radio: Finding next matching hit...', '✨');
+      showToast('Finding songs similar to this track...', '🎵');
 
       try {
-        const query = currentSong.artist || currentSong.title.split(' ')[0] || 'trending';
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        if (!res.ok) throw new Error('Search failed');
-        const data = await res.json();
-        const songs = (data && data.results) || (Array.isArray(data) ? data : []);
+        const artist = (currentSong.artist || '').split(',')[0].replace(/\bfeat\.?\b.*$/i, '').trim();
+        const language = (currentSong.language || '').trim();
+        const queries = [
+          artist ? `${language ? `${language} ` : ''}${artist} songs` : `${currentSong.title} songs`,
+          [currentSong.title, artist].filter(Boolean).join(' ')
+        ].filter((query, index, all) => query && all.indexOf(query) === index);
 
-        const existingIds = new Set(currentQueue.map(s => s.id || (s.title + s.artist)));
-        const newTracks = songs.filter(s => !existingIds.has(s.id || (s.title + s.artist)));
+        const existingIds = new Set(currentQueue.map(s => String(s.id || '').toLowerCase()).filter(Boolean));
+        const normalizeTitle = value => (value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        const currentTitle = normalizeTitle(currentSong.title);
+        let newTracks = [];
+
+        for (const query of queries) {
+          const response = await apiSearch(query);
+          const songs = Array.isArray(response) ? response : (response && response.results) || [];
+          newTracks = songs.filter(song => {
+            const id = String(song.id || '').toLowerCase();
+            const title = normalizeTitle(song.title);
+            const artistKey = normalizeTitle(song.artist);
+            const duplicateInQueue = currentQueue.some(queued =>
+              (id && id === String(queued.id || '').toLowerCase()) ||
+              (title && title === normalizeTitle(queued.title) && artistKey === normalizeTitle(queued.artist))
+            );
+            return song.title && title !== currentTitle && !duplicateInQueue && (!id || !existingIds.has(id));
+          });
+          if (newTracks.length > 0) break;
+        }
 
         if (newTracks.length > 0) {
           const added = newTracks.slice(0, 8);
           const nextIdx = currentQueue.length;
           currentQueue.push(...added);
           playSongAt(nextIdx);
-          showToast(`♾️ Radio added ${added.length} matching hits!`, '🎵');
-        } else if (repeatMode !== 'one') {
-          playSongAt(0);
+          showToast(`Now playing a similar track. Added ${added.length} recommendations to your queue.`, '🎵');
+        } else {
+          showToast('No new similar tracks found. Add songs to the queue to keep listening.', 'ℹ️');
         }
       } catch (err) {
-        console.warn('Infinity autoplay fallback:', err);
-        if (currentQueue.length > 0) playSongAt(0);
+        console.warn('Similar autoplay could not load recommendations:', err);
+        showToast('Could not load similar tracks. Check your connection and try again.', '⚠️');
       } finally {
         isFetchingInfinityTracks = false;
       }
@@ -8477,7 +8558,17 @@
 
     function escapeJsString(str) {
       if (!str) return '';
-      return String(str).replace(/'/g, "\\'").replace(/"/g, '\\"');
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n')
+        .replace(/\u2028/g, '\\u2028')
+        .replace(/\u2029/g, '\\u2029');
     }
   </script>
 </body>

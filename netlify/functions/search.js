@@ -1,4 +1,5 @@
 const CryptoJS = require('crypto-js');
+const fetchWithTimeout = require('../../lib/fetch-with-timeout');
 
 const DES_KEY = CryptoJS.enc.Utf8.parse('38346591');
 
@@ -164,7 +165,8 @@ function rankTracks(tracks, query) {
 
 async function searchItunesFallback(query) {
   try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`);
+    const res = await fetchWithTimeout(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=15`, {}, 3000);
+    if (!res.ok) return [];
     const data = await res.json();
     if (!data.results) return [];
 
@@ -215,10 +217,16 @@ exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
+  if (event.httpMethod !== 'GET') {
+    return { statusCode: 405, headers: { ...headers, Allow: 'GET, OPTIONS' }, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
 
   const query = (event.queryStringParameters && event.queryStringParameters.q) || '';
   if (!query || !query.trim()) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing query parameter q' }) };
+  }
+  if (query.length > 160) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Search query is too long' }) };
   }
 
   const cacheKey = query.trim().toLowerCase();
@@ -229,11 +237,12 @@ exports.handler = async (event, context) => {
 
   try {
     const saavnUrl = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&p=1&n=25&q=${encodeURIComponent(query)}`;
-    const response = await fetch(saavnUrl, {
+    const response = await fetchWithTimeout(saavnUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
-    });
+    }, 5000);
+    if (!response.ok) throw new Error(`Search provider returned ${response.status}`);
     const data = await response.json();
     let results = [];
 

@@ -1,4 +1,5 @@
 // High-Performance In-Memory LRU Cache for Auto-Suggestions
+const fetchWithTimeout = require('../../lib/fetch-with-timeout');
 const suggestCache = new Map();
 const MAX_SUGGEST_CACHE = 500;
 const SUGGEST_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -33,10 +34,16 @@ exports.handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers, body: '' };
   }
+  if (event.httpMethod !== 'GET') {
+    return { statusCode: 405, headers: { ...headers, Allow: 'GET, OPTIONS' }, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
 
   const query = (event.queryStringParameters && event.queryStringParameters.q) || '';
   if (!query || query.trim().length < 2) {
     return { statusCode: 200, headers, body: JSON.stringify({ suggestions: [] }) };
+  }
+  if (query.length > 160) {
+    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Search query is too long' }) };
   }
 
   const key = query.trim().toLowerCase();
@@ -47,11 +54,12 @@ exports.handler = async (event, context) => {
 
   try {
     const url = `https://www.jiosaavn.com/api.php?__call=autocomplete.get&_format=json&_marker=0&cc=in&includeMetaTags=1&query=${encodeURIComponent(query)}`;
-    const response = await fetch(url, {
+    const response = await fetchWithTimeout(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       }
-    });
+    }, 3500);
+    if (!response.ok) throw new Error(`Suggestion provider returned ${response.status}`);
     const data = await response.json();
     const suggestions = [];
 
